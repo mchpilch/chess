@@ -1,19 +1,96 @@
 import { Application, Assets, Sprite, Graphics } from "pixi.js";
+// https://pixijs.download/dev/docs/index.html - install pixi start project
+// https://pixijs.com/8.x/examples?example=events_dragging - draging example from playground
 
+// pieces svgs from Uray M. János https://greenchess.net/info.php?item=downloads CC license
 (async () => {
   const app = new Application();
-  await app.init({ background: "#000000ff", resizeTo: window });
+  await app.init({ background: "#262726ff", resizeTo: window });
   document.getElementById("pixi-container")!.appendChild(app.canvas);
 
+  // loading all textures
   const texture = await Assets.load("/assets/bunny.png");
   const bunny = new Sprite(texture);
-  bunny.anchor.set(0.5);
-  bunny.position.set(app.screen.width / 2, app.screen.height / 2);
 
-  const SQUARE = 80;
-  const COLOR_WHITE = "#d4dbdeff";
-  const COLOR_BLACK = "#223a24ff";
+  const svgTexturePawnB = await Assets.load("/assets/pawn-b.svg")
+  const pawnB = new Sprite(svgTexturePawnB);
+
+  const svgTexturePawnW = await Assets.load("/assets/pawn-w.svg")
+  const pawnW = new Sprite(svgTexturePawnW);
+
+  const svgTextureKnightB = await Assets.load("/assets/knight-b.svg")
+  const knightB = new Sprite(svgTextureKnightB);
+
+  const svgTextureKnightW = await Assets.load("/assets/knight-w.svg")
+  const knightW = new Sprite(svgTextureKnightW);
+
+  const svgTextureBishopB = await Assets.load("/assets/bishop-b.svg")
+  const bishopB = new Sprite(svgTextureBishopB);
+
+  const svgTextureBishopW = await Assets.load("/assets/bishop-w.svg")
+  const bishopW = new Sprite(svgTextureBishopW);
+
+  const svgTextureRookB = await Assets.load("/assets/rook-b.svg")
+  const rookB = new Sprite(svgTextureRookB);
+
+  const svgTextureRookW = await Assets.load("/assets/rook-w.svg")
+  const rookW = new Sprite(svgTextureRookW);
+
+  const svgTexturQueenB = await Assets.load("/assets/queen-b.svg")
+  const queenB = new Sprite(svgTexturQueenB);
+
+  const svgTexturQueenW = await Assets.load("/assets/queen-w.svg")
+  const queenW = new Sprite(svgTexturQueenW);
+
+  const svgTextureKingB = await Assets.load("/assets/king-b.svg")
+  const kingB = new Sprite(svgTextureKingB);
+
+  const svgTextureKingW = await Assets.load("/assets/king-w.svg")
+  const kingW = new Sprite(svgTextureKingW);
+
+  // setting scale and anchor for all sprites
+  pawnB.anchor.set(0.5);
+  pawnB.scale.set(1);
+
+  pawnW.anchor.set(0.5);
+  pawnW.scale.set(1);
+
+  knightB.anchor.set(0.5);
+  knightB.scale.set(1);
+
+  knightW.anchor.set(0.5);
+  knightW.scale.set(1);
+
+  bishopB.anchor.set(0.5);
+  bishopB.scale.set(1);
+
+  bishopW.anchor.set(0.5);
+  bishopW.scale.set(1);
+
+  rookB.anchor.set(0.5);
+  rookB.scale.set(1);
+
+  rookW.anchor.set(0.5);
+  rookW.scale.set(1);
+
+  queenB.anchor.set(0.5);
+  queenB.scale.set(1);
+
+  queenW.anchor.set(0.5);
+  queenW.scale.set(1);
+
+  kingB.anchor.set(0.5);
+  kingB.scale.set(1);
+
+  kingW.anchor.set(0.5);
+  kingW.scale.set(1);
+  // bunny.position.set(app.screen.width / 2, app.screen.height / 2);
+
+  const SQUARE = 120;
+  const COLOR_WHITE = "#c0c9cdff";
+  const COLOR_BLACK = "#346738ff";
   const OFFSET = 120;
+  const OFFSET_PIECES = OFFSET + SQUARE / 2;
 
   const chessboard: Graphics[] = [];
 
@@ -27,6 +104,18 @@ import { Application, Assets, Sprite, Graphics } from "pixi.js";
 
       chessboard.push(square);
       app.stage.addChild(square);
+    }
+  }
+
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+
+      let test = new Sprite(svgTexturePawnW);
+      test.anchor.set(0.5);
+      test.scale.set(1);
+      test.position.set(OFFSET_PIECES + c * SQUARE, OFFSET_PIECES + r * SQUARE);
+      app.stage.addChild(test);
+
     }
   }
 
@@ -51,7 +140,7 @@ import { Application, Assets, Sprite, Graphics } from "pixi.js";
 
   app.stage.addChild(bunny);
 
-    let dragTarget = null;
+  let dragTarget = null;
 
   app.stage.eventMode = 'static';
   app.stage.hitArea = app.screen;
@@ -60,7 +149,7 @@ import { Application, Assets, Sprite, Graphics } from "pixi.js";
 
 
   app.ticker.add((time) => {
-    bunny.rotation += 0.1 * time.deltaTime;
+    // bunny.rotation += 0.1 * time.deltaTime;
   });
 
 
