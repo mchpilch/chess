@@ -5,13 +5,14 @@ import { assetsManifest } from './assetsManifest';
 
 (async () => {
   const app = new Application();
+  // @ts-ignore
   globalThis.__PIXI_APP__ = app; // pixi JS Dev tool // comment/uncomment when
   await app.init({
     background: "#297c29ff",
     resizeTo: window
   });
-  // document.body.appendChild(app.canvas);
-  document.getElementById("pixi-container")!.appendChild(app.canvas);
+
+  document.getElementById("pixi-container")!.appendChild(app.canvas); 
 
 
   try {

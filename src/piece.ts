@@ -7,6 +7,9 @@ export class Piece extends Container {
     super();
     const key = `${type}-${color}`;
     const texture = Assets.get(key);
+    console.log('xxx key',key);
+    console.log('xxx texture',texture);
+    
     const sprite = new Sprite(texture); // in future can be spine or movieclip if i want my pieces animated
     sprite.anchor.set(0.5);
     this._display = sprite; // underscore for private fields

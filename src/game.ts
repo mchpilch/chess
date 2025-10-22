@@ -2,6 +2,8 @@
 
 import { Application } from 'pixi.js';
 import { Pawn } from './Pieces/pawn';
+import { Queen } from './Pieces/queen';
+import { Knight } from './Pieces/knight';
 
 
 type GameInitData = {
@@ -37,22 +39,25 @@ export class Game {
 
         // setup managers
         this.app = gameInitData.app;
-        // this.app.canvas.style.position = 'absolute';
-        // document.body.appendChild(this.app.canvas);
 
         console.log('this.app', this.app);
 
         const pawnB = new Pawn("b");
-        pawnB.position.set(0, 0);
+        pawnB.position.set(250, 500);
 
         const pawnW = new Pawn("w");
-        pawnW.position.set(222, 0);
+        pawnW.position.set(500, 500);
 
-        
-        const pawnW3 = new Pawn("w");
-        pawnW.position.set(160, 0);
+        const queenB = new Queen("b");
+        queenB.position.set(750, 500);
 
-        this.app.stage.addChild(pawnB, pawnW, pawnW3);
+        const queenWW = new Queen("w");
+        queenWW.position.set(1000, 500);
+
+        const kk = new Knight("w");
+        kk.position.set(1250, 500);
+
+        this.app.stage.addChild(pawnB, pawnW, kk, queenB, queenWW);
 
     }
 }
