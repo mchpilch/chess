@@ -37,8 +37,8 @@ export class Game {
 
         // setup managers
         this.app = gameInitData.app;
-        this.app.canvas.style.position = 'absolute';
-        document.body.appendChild(this.app.canvas);
+        // this.app.canvas.style.position = 'absolute';
+        // document.body.appendChild(this.app.canvas);
 
         console.log('this.app', this.app);
 

@@ -10,7 +10,8 @@ import { assetsManifest } from './assetsManifest';
     background: "#297c29ff",
     resizeTo: window
   });
-  document.body.appendChild(app.canvas);
+  // document.body.appendChild(app.canvas);
+  document.getElementById("pixi-container")!.appendChild(app.canvas);
 
 
   try {
