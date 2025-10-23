@@ -18,6 +18,7 @@ export class Game {
     private initialized!: boolean;
 
     private app!: Application;
+    private tempParser!: FenParser
 
     private constructor() {
         this.initialized = false;
@@ -38,6 +39,7 @@ export class Game {
             return;
         }
         this.initialized = true;
+        this.tempParser = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
 
         // setup managers
         this.app = gameInitData.app;
@@ -64,7 +66,7 @@ export class Game {
             for (let j = 0; j < 8; j++) {
 
                 board[i][j].position.set( offsetX + j * 150, offsetY + i * 150);
-                console.log(`adding board[${i}][${j}]`, board[i][j]);
+                // console.log(`adding board[${i}][${j}]`, board[i][j]);
                 this.app.stage.addChild(board[i][j]);
             }
         }

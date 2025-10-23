@@ -30,7 +30,7 @@ export class FenParser {
         for (let i = 0; i < 8; i++) {
             const row = [];
             for (let j = 0; j < 8; j++) {
-                row.push(new Pawn('w')); // or whatever logic your FEN parser uses
+                row.push(new Pawn('w'));
             }
             this.board.push(row);
         }
@@ -66,7 +66,80 @@ export class FenParser {
         // this.fullMoveNumber = this.parseFullMoveNumber(parts[5]);
     }
 
+    // private parseBoard(notation: string): Board {
+    // // public parseBoard(notation: string): void {
+
+    //     this.board = [];
+
+    //     for (let i = 0; i < 8; i++) {
+    //         const row = [];
+    //         for (let j = 0; j < 8; j++) {
+    //             row.push(new Pawn('w'));
+    //         }
+    //         this.board.push(row);
+    //     }
+
+    //     let i = 0;
+    //     while (i < notation.length) {
+    //         if (notation[i] === '/') {
+    //             i++;
+    //             continue;
+    //         }
+    //         if (isNaN(Number(notation[i])) === false) { // so it is a number then
+    //             i+= Number(notation[i]);
+    //         }
+            
+    //     }
+
+    // }
     private parseActiveColor(fenActiveColor: string): 'w' | 'b' {
         return fenActiveColor === 'w' ? 'w' : 'b';
     }
 }
+
+
+// https://www.typescriptlang.org/play/?#code/GYVwdgxgLglg9mABABwIYCcDOBTAQnDAEwAow4pVYEAuRTKdGMAcwEpaA3OGQxAbwBQiYYgA22KIhiIAvIgAMAbgFCR4yQFtUADwCSUbOkrwwmWYgCM864sQB6O3VTAJATzEwNMKKuHqpBkZUpuZKKiKIEAiYcOIAdKJwzMQA5NrpiGQUwQnYLFAAFikANJnkxgi5+QWsvogA7gUw4ojE0gA8ZdkmVcyFrPzhESLehhWmANQTysMjwK2jQSZmAHyIWnqB45gDgrOzUaax2HH1GGDEAES46NioANZMzGJwcMi0UK-rqGDui9sAQkurBm+wiACNbg9QbMAL5DWYweakcrBADaMAAurIZHIUnYUrs6mCYFMYWDIghYGAQNhyRF4cS5q0suMMdjcXjUITBhSRIcYvFEskUqhEAgpGBCNh7pgSlIQUzEWSlcNDtTafSRPCSciYJgAHKoA3EA0gDTgwwo7oIdmsAacxDAVCiHC7eyOGIBKRmMU0i2GRCFPKqiIC44JJKpf2W9DipBMaWy+UwRV84ThoVRlIGJAxwOfeVmgPoa1srH25ShkaICZyYuxsvoitV9OUo5ZkXpbRSFO1VU67UqRkCByIAAq2HoAjQWDwBHQJFFACZuYqVEA// function parseBoard(notation: string): void {
+//     let i = 0;
+
+//     let maxIterations = 1000; // safety limit
+//     let iterations = 0;
+
+//     console.log('xxx notation.length', notation.length)
+//     while (i < notation.length) {
+
+//         iterations++;
+//         if (iterations > maxIterations) {
+//             console.warn("Breaking loop: too many iterations!");
+//             break;
+//         }
+
+//         if (notation[i] === '/') {
+//             i++;
+//             continue;
+//         }
+
+//         if (notation[i] === 'a') {
+//             console.log('a on indeks', i);
+//             i++;
+//             continue;
+//         }
+//         if (isNaN(Number(notation[i])) === false) { // so it is a number then
+//             console.log('number on indeks', i);
+//             console.log('ten number to', Number(notation[i]));
+
+//             i += Number(notation[i]);
+
+//             console.log('xxx i', i)
+
+//         }
+//     }
+
+// }
+
+
+// // Test // this code while rewaches 2 then skips the next 2 chards from string so it should do this for board so i will introduce index for board and index for while iterator
+// parseBoard('a2a');
+// SO TWO INDEXES TO DO NEXT PROGRAMING SESSION
+
+
+
