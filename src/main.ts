@@ -12,7 +12,7 @@ import { assetsManifest } from './assetsManifest';
     resizeTo: window
   });
 
-  document.getElementById("pixi-container")!.appendChild(app.canvas); 
+  document.getElementById("pixi-container")!.appendChild(app.canvas);
 
 
   try {
@@ -30,6 +30,8 @@ import { assetsManifest } from './assetsManifest';
     app: app,
   };
   await game.init(gameInitData);
+  // @ts-ignore
+  globalThis.__PIXI_GAME__ = game;
 })();
 
 
