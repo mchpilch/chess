@@ -57,19 +57,24 @@ export class Game {
         this.app.stage.addChild(rook);
         this.app.stage.addChild(queen);
 
-        const fenParser1 = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
-        let board = fenParser1.getBoard();
+        // const fenParser1 = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+        let board = this.tempParser.getBoard();
         console.log(board);
         const offsetX = 1250;
         const offsetY = 750;
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
 
+                if(board[i][j] !== null){
                 board[i][j].position.set( offsetX + j * 150, offsetY + i * 150);
                 // console.log(`adding board[${i}][${j}]`, board[i][j]);
                 this.app.stage.addChild(board[i][j]);
+                }
+
             }
         }
+
+
         // const fenParser2 = new FenParser('4k2r/6r1/8/8/8/8/3R4/R3K3 w Qk - 0 1');
     }
 }

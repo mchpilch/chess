@@ -1,7 +1,14 @@
 import { Piece } from "./piece";
+import { Bishop } from "./Pieces/bishop";
+import { King } from "./Pieces/king";
+import { Knight } from "./Pieces/knight";
 import { Pawn } from "./Pieces/pawn";
+import { Queen } from "./Pieces/queen";
+import { Rook } from "./Pieces/rook";
 
-export type Board = Piece[][];
+export type Square = (Piece | null);
+export type Board = Square[][];
+
 export class FenParser {
 
     //The sequence "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR" 
@@ -25,26 +32,28 @@ export class FenParser {
     // }
 
     public getBoard(): Board {
-        this.board = [];
 
-        for (let i = 0; i < 8; i++) {
-            const row = [];
-            for (let j = 0; j < 8; j++) {
-                row.push(new Pawn('w'));
-            }
-            this.board.push(row);
-        }
 
-        this.board[0] = [
-            new Pawn('b'),
-            new Pawn('b'),
-            new Pawn('b'),
-            new Pawn('b'),
-            new Pawn('b'),
-            new Pawn('b'),
-            new Pawn('b'),
-            new Pawn('b')
-        ];
+        // for (let i = 0; i < 8; i++) {
+        //     const row = [];
+        //     for (let j = 0; j < 8; j++) {
+        //         row.push(new Pawn('w'));
+        //     }
+        //     this.board.push(row);
+        // }
+
+        // this.board[0] = [
+        //     new Pawn('b'),
+        //     new Pawn('b'),
+        //     null,
+        //     new Pawn('b'),
+        //     new Pawn('b'),
+        //     new Pawn('b'),
+        //     new Pawn('b'),
+        //     new Pawn('b')
+        // ];
+
+        console.log("xxx  getBoard")
         return this.board;
     }
 
@@ -53,12 +62,12 @@ export class FenParser {
 
         const parts = fenPosition.split(' ')
 
-        console.log('xxx parts', parts);
+        console.log('xxxx parts', parts);
         if (parts.length !== 6) {
             throw new Error('Invalid FEN string - wrong number of segments');
         }
 
-        // this.board = this.parseBoard(parts[0]);
+        this.board = this.parseBoard(parts[0]);
         this.activeColor = this.parseActiveColor(parts[1]);
         // this.castlingRights = this.parseCastlingRights(parts[2]);
         // this.enPassant = this.parseEnPassant(parts[3]);
@@ -66,32 +75,116 @@ export class FenParser {
         // this.fullMoveNumber = this.parseFullMoveNumber(parts[5]);
     }
 
-    // private parseBoard(notation: string): Board {
-    // // public parseBoard(notation: string): void {
+    private parseBoard(notation: string): Board {
+        // public parseBoard(notation: string): void {
+        console.log("xxxx  parseBoard")
+        let board: Board = [];
 
-    //     this.board = [];
+        for (let i = 0; i < 8; i++) {
+            const row = [];
+            for (let j = 0; j < 8; j++) {
+                row.push(null);
+            }
+            board.push(row);
+        }
 
-    //     for (let i = 0; i < 8; i++) {
-    //         const row = [];
-    //         for (let j = 0; j < 8; j++) {
-    //             row.push(new Pawn('w'));
-    //         }
-    //         this.board.push(row);
-    //     }
+        let n = 0;
+        let rowIndex = 0;
+        let colIndex = 0;
 
-    //     let i = 0;
-    //     while (i < notation.length) {
-    //         if (notation[i] === '/') {
-    //             i++;
-    //             continue;
-    //         }
-    //         if (isNaN(Number(notation[i])) === false) { // so it is a number then
-    //             i+= Number(notation[i]);
-    //         }
-            
-    //     }
+        let maxIterations = 1000; // safety limit
+        let iterations = 0;
 
-    // }
+        console.log('xxxx notation.length', notation.length)
+        while (n < notation.length) {
+
+            iterations++;
+            if (iterations > maxIterations) {
+                console.warn("Breaking loop: too many iterations!");
+                break;
+            }
+
+            if (notation[n] === '/') { // new row
+                console.log('xxxx / on index', n)
+                n++;
+                rowIndex++;
+                colIndex = 0;
+                continue;
+            }
+
+            if (isNaN(Number(notation[n])) === false) { // so it is a number then
+                console.log('xxxx number ', Number(notation[n]), ' on index', n)
+
+                colIndex += Number(notation[n]);
+                n++;
+                continue;
+            }
+            console.log('xxx n', n)
+
+            switch (notation[n]) {
+                case 'r':
+                    board[rowIndex][colIndex] = new Rook('b');
+                    break;
+
+                case 'n':
+                    board[rowIndex][colIndex] = new Knight('b');
+                    break;
+
+                case 'b':
+                    board[rowIndex][colIndex] = new Bishop('b');
+                    break;
+
+                case 'q':
+                    board[rowIndex][colIndex] = new Queen('b');
+                    break;
+
+                case 'k':
+                    board[rowIndex][colIndex] = new King('b');
+                    break;
+
+                case 'p':
+                    board[rowIndex][colIndex] = new Pawn('b');
+                    break;
+
+                case 'R':
+                    board[rowIndex][colIndex] = new Rook('w');
+                    break;
+
+                case 'N':
+                    board[rowIndex][colIndex] = new Knight('w');
+                    break;
+
+                case 'B':
+                    board[rowIndex][colIndex] = new Bishop('w');
+                    break;
+
+                case 'Q':
+                    board[rowIndex][colIndex] = new Queen('w');
+                    break;
+
+                case 'K':
+                    board[rowIndex][colIndex] = new King('w');
+                    break;
+
+                case 'P':
+                    board[rowIndex][colIndex] = new Pawn('w');
+                    break;
+
+                default:
+                    // handle other FEN characters here (digits, '/', etc.)
+                    break;
+            }
+
+            console.log('piece on index', n)
+            n++;
+            colIndex++;
+
+        }
+
+        return board;
+    }
+
+
     private parseActiveColor(fenActiveColor: string): 'w' | 'b' {
         return fenActiveColor === 'w' ? 'w' : 'b';
     }
