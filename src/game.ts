@@ -1,13 +1,22 @@
 
 
 import { Application } from 'pixi.js';
-import { Pawn } from './Pieces/pawn';
-import { Queen } from './Pieces/queen';
-import { Knight } from './Pieces/knight';
 import { FenParser } from './fenParser';
-import { Rook } from './Pieces/rook';
+import { Board } from './board';
 
-
+//TODO:
+// - move piece (drag system and release system - gravity to squre)
+// - castling FEN
+// - en passant FEN
+// - half move clock FEN
+// - full move number FEN
+// - check and checkmate
+// - move validation
+// - promotion
+// - game over
+// - move history
+// - undo move
+// - restart game
 type GameInitData = {
     app: Application,
 };
@@ -39,23 +48,17 @@ export class Game {
             return;
         }
         this.initialized = true;
-        this.tempParser = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+        // this.tempParser = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+        this.tempParser = new FenParser('r1bk3r/p2pBpNp/n4n2/1p1NP2P/6P1/3P4/P1P1K3/q5b1 w KQkq - 0 1');
+        // this.tempParser = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq i3 0 1');
 
         // setup managers
         this.app = gameInitData.app;
 
         console.log('this.app', this.app);
 
-        const rook = new Rook("b");
-        rook.position.set(1600, 500);
-
-        const queen = new Queen("w");
-        queen.position.set(1800, 500);
-
-
-        // this.app.stage.addChild(pawnB, pawnW, kk, queenB, queenWW);
-        this.app.stage.addChild(rook);
-        this.app.stage.addChild(queen);
+        let gameBoard = new Board();
+        this.app.stage.addChild(gameBoard.getBoard());
 
         // const fenParser1 = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
         let board = this.tempParser.getBoard();
@@ -65,10 +68,10 @@ export class Game {
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
 
-                if(board[i][j] !== null){
-                board[i][j].position.set( offsetX + j * 150, offsetY + i * 150);
-                // console.log(`adding board[${i}][${j}]`, board[i][j]);
-                this.app.stage.addChild(board[i][j]);
+                if (board[i][j] !== null) {
+                    board[i][j]!.position.set(offsetX + j * 300, offsetY + i * 300);
+                    // console.log(`adding board[${i}][${j}]`, board[i][j]);
+                    this.app.stage.addChild(board[i][j]!);
                 }
 
             }

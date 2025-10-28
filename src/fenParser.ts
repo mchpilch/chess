@@ -121,7 +121,7 @@ export class FenParser {
             }
             console.log('xxx n', n)
 
-            switch (notation[n]) {
+            switch (notation[n]) { // todo create dynamic mapping to get rid off switch cases
                 case 'r':
                     board[rowIndex][colIndex] = new Rook('b');
                     break;
@@ -236,3 +236,13 @@ export class FenParser {
 
 
 
+// en passant ideas
+// rnbqkbnr/ppp1pppp/8/8/4P3/8/PPP2PPP/RNBQKBNR b KQkq - 0 3 - no en passant casue it is only just after the pwan moved two squres
+// rnbqkbnr/ppp1pppp/8/3p4/4P3/3P4/PPP2PPP/RNBQKBNR b KQkq - 0 2 - no en passant casue it is only just after the pwan moved two squres
+// rnbqkbnr/ppp2ppp/8/3p4/PP1Pp2P/8/2P1PPP1/RNBQKBNR b KQkq d3 0 4
+// rnbqkbnr/ppp4p/8/3p1pp1/PP1PpPPP/8/2P1P3/RNBQKBNR b KQkq g3 0 6
+
+// En passant can only be captured on the very next move after the pawn advances two squares. So only one possible, not even two per color. Just one. Good easier to handle.
+
+// // chess.com and lichess are using dom elemts not canvas ? - > https://svelte.dev/
+// GITHUB project out of this actually not just repo?

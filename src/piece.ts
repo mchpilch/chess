@@ -12,6 +12,7 @@ export class Piece extends Container {
     
     const sprite = new Sprite(texture); // in future can be spine or movieclip if i want my pieces animated
     sprite.anchor.set(0.5);
+    sprite.scale.set(2);
     this._display = sprite; // underscore for private fields
     this.addChild(sprite);
   }
@@ -25,4 +26,6 @@ export class Piece extends Container {
     this._display = newDisplay;
     this.addChild(newDisplay);
   }
+
 }
+ // https://pixijs.com/7.x/examples/events/dragging ???

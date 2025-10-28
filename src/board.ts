@@ -1,54 +1,40 @@
-import { Assets, Container, Graphics, Sprite } from "pixi.js";
+import { Container, Graphics } from "pixi.js";
+import { boardConfig } from "./boardConfig";
 
 export class Board {
 
-    SQUARE = 120;
-    COLOR_WHITE = "#c0c9cdff";
-    COLOR_BLACK = "#346738ff";
-    OFFSET = 120;
-    OFFSET_PIECES = this.OFFSET + this.SQUARE / 2;
+    private board!: Container;
+    private config = boardConfig;
 
-    chessboard: Graphics[] = [];
     constructor() {
 
+        this.board = this.generateBoard();
     }
 
-    public generateBoard(): Container {
+    private generateBoard(): Container{
 
-        const boardContainer = new Container();
-        // const chessboard: Graphics[] = [];
+        const boardContainer = new Container;
 
         for (let r = 0; r < 8; r++) {
             for (let c = 0; c < 8; c++) {
 
-                const color = (r + c) % 2 === 0 ? this.COLOR_BLACK : this.COLOR_WHITE;
+                const color = (r + c) % 2 === 0 ? this.config.colorDark : this.config.colorLight;
                 const square = new Graphics()
-                    .rect(this.OFFSET + c * this.SQUARE, this.OFFSET + r * this.SQUARE, this.SQUARE, this.SQUARE)
+                    .rect(
+                        this.config.offset.x + c * this.config.squareWidth - this.config.squareWidth / 2,
+                        this.config.offset.y + r * this.config.squareWidth - this.config.squareWidth / 2,
+                        this.config.squareWidth,
+                        this.config.squareWidth
+                    )
                     .fill(color);
 
-                // chessboard.push(square);
                 boardContainer.addChild(square);
             }
         }
 
         return boardContainer;
     };
-    public async generatePieces(): Promise<Container> {
 
-        const svgTexturePawnW = await Assets.load("/assets/pawn-w.svg")
-        const pawnW = new Sprite(svgTexturePawnW);
+    public getBoard(): Container{ return this.board; }
 
-        const piecesContainer = new Container();
-        for (let r = 0; r < 8; r++) {
-            for (let c = 0; c < 8; c++) {
-
-                let test = new Sprite(svgTexturePawnW);
-                test.anchor.set(0.5);
-                test.scale.set(1);
-                test.position.set(this.OFFSET_PIECES + c * this.SQUARE, this.OFFSET_PIECES + r * this.SQUARE);
-                piecesContainer.addChild(test);
-            };
-        }
-        return piecesContainer;
-    }
 }
