@@ -1,5 +1,7 @@
 export const boardConfig = {
-    
+
+    numberOfRows: 8,
+    numberOfFiles: 8,
     squareWidth: 300,
     colorDark: '#c6dac0ff',
     colorLight: '#4b734eff',
