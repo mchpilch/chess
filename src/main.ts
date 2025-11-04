@@ -8,7 +8,7 @@ import { assetsManifest } from './assetsManifest';
   // @ts-ignore
   globalThis.__PIXI_APP__ = app; // pixi JS Dev tool // comment/uncomment when
   await app.init({
-    background: "#297c29ff",
+    background: "#000000ff",
     resizeTo: window
   });
 

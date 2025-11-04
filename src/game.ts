@@ -58,24 +58,29 @@ export class Game {
         console.log('this.app', this.app);
 
         let gameBoard = new Board();
-        this.app.stage.addChild(gameBoard.getBoard());
+        this.app.stage.interactive = true;
 
         // const fenParser1 = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
-        let board = this.tempParser.getBoard();
-        console.log(board);
+        let pieceBoard = this.tempParser.getBoard();
+        console.log('pieceBoard', pieceBoard);
+        gameBoard.setPieceBoard(pieceBoard);
+        this.app.stage.addChild(gameBoard.getBoard());
+
         const offsetX = 1250;
         const offsetY = 750;
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
 
-                if (board[i][j] !== null) {
-                    board[i][j]!.position.set(offsetX + j * 300, offsetY + i * 300);
+                if (pieceBoard[i][j] !== null) {
+                    pieceBoard[i][j]!.position.set(offsetX + j * 300, offsetY + i * 300);
                     // console.log(`adding board[${i}][${j}]`, board[i][j]);
-                    this.app.stage.addChild(board[i][j]!);
+                    this.app.stage.addChild(pieceBoard[i][j]!);
                 }
 
             }
         }
+
+        gameBoard.updateOccupationOfFieds();
 
 
         // const fenParser2 = new FenParser('4k2r/6r1/8/8/8/8/3R4/R3K3 w Qk - 0 1');

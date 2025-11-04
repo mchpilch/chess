@@ -8,14 +8,14 @@ export type Field = {
     notation: string; // "a1","a2", ..., "h8"
     position: { x: number; y: number };
     occupiedBy: Piece | null;
-    graphics: Graphics;
+    graphics: Graphics;  // the square background
 };
 
 export class Board {
 
     private board!: Container;
+    private pieceBoard!: (Piece | null)[][];
     private fields: Field[] = [];
-
     private config = boardConfig;
 
     constructor() {
@@ -46,7 +46,17 @@ export class Board {
                     )
                     .fill(color);
 
-                this.fields.push({ id, notation, position: { x, y }, occupiedBy: null, graphics: square });
+                // Wrap the square in a container
+
+                const field: Field = {
+                    id,
+                    notation,
+                    position: { x, y },
+                    occupiedBy: null,
+                    graphics: square,
+                };
+
+                this.fields.push(field);
 
                 boardContainer.addChild(square);
             }
@@ -55,6 +65,18 @@ export class Board {
         return boardContainer;
     };
 
+
+    public updateOccupationOfFieds() {
+
+        this.fields.forEach((f) => {
+
+            f.occupiedBy = this.pieceBoard[Math.floor(f.id / 8)][f.id % 8];
+        });
+        console.log('xxx this.fields', this.fields);
+    }
+
     public getBoard(): Container { return this.board; }
 
+    // PieceBoard is a datastructure to hold pieces (sprites) in arr[][]
+    public setPieceBoard(pieceBoard: (Piece | null)[][]) { this.pieceBoard = pieceBoard; }
 }
