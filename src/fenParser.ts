@@ -32,28 +32,7 @@ export class FenParser {
     // }
 
     public getBoard(): Board {
-
-
-        // for (let i = 0; i < 8; i++) {
-        //     const row = [];
-        //     for (let j = 0; j < 8; j++) {
-        //         row.push(new Pawn('w'));
-        //     }
-        //     this.board.push(row);
-        // }
-
-        // this.board[0] = [
-        //     new Pawn('b'),
-        //     new Pawn('b'),
-        //     null,
-        //     new Pawn('b'),
-        //     new Pawn('b'),
-        //     new Pawn('b'),
-        //     new Pawn('b'),
-        //     new Pawn('b')
-        // ];
-
-        console.log("xxx  getBoard")
+        
         return this.board;
     }
 

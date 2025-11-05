@@ -3,8 +3,9 @@ import { Assets, Container, Sprite, FederatedPointerEvent, Graphics, Rectangle }
 export class Piece extends Container {
 
   private piece: Container;
-  private dragOffset = { x: 0, y: 0 }; // on a start of drag piece will be moved a bit and during drag it will be moved by these values relative to cursor
+  // private dragOffset = { x: 0, y: 0 }; // on a start of drag piece will be moved a bit and during drag it will be moved by these values relative to cursor
   private dragging = false; // for reasurrance variable
+
   constructor(type: string, color: "w" | "b") {
     super();
     const key = `${type}-${color}`;
@@ -14,24 +15,21 @@ export class Piece extends Container {
 
     const sprite = new Sprite(texture); // in future can be spine or movieclip if i want my pieces animated
     sprite.anchor.set(0.5);
-    sprite.scale.set(1);
-    this.piece = sprite; // underscore for private fields
-    this.addChild(sprite);
+    sprite.scale.set(2);
+    this.piece = new Container();
 
+    // Bg to visualize hit area
     let transparentBackground = new Graphics().rect(
       -150, -150, 300, 300
-    ).fill(0xff0000);
-    transparentBackground.alpha = 0.5;
-    this.addChild(transparentBackground);
+    ).fill(0xffff00);
+    transparentBackground.alpha = 0.65;
+    this.piece.addChild(transparentBackground);
 
+    this.piece.addChild(sprite);
     this.piece.hitArea = new Rectangle(-150, -150, 300, 300);
+    this.piece.eventMode = 'static';     // enable the piece to be interactive... this will allow it to respond to mouse and touch events - from https://pixijs.com/7.x/examples/events/dragging
 
-    this.addChild(sprite);
-
-
-    // enable the piece to be interactive... this will allow it to respond to mouse and touch events - from https://pixijs.com/7.x/examples/events/dragging
-    this.piece.eventMode = 'static';
-
+    this.addChild(this.piece);
     this.addFieldEvents();
   }
 
@@ -62,14 +60,18 @@ export class Piece extends Container {
 
     // Compute offset: pointer global pos → local parent space
     const parentPos = this.parent?.toLocal(e.global) ?? { x: 0, y: 0 };
-    this.dragOffset.x = this.x - parentPos.x;
-    this.dragOffset.y = this.y - parentPos.y;
 
-    // Attach pointermove on stage / parent so we keep receiving moves 
-    const stage = this.parent; // get stage or parent
+    this.position.set(
+      parentPos.x,// + this.dragOffset.x,
+      parentPos.y,// + this.dragOffset.y
+    );
+    // For now (2025-11-05): 
+    // The parent of each Piece is the PIXI stage, since pieces are added directly to it in Game.ts.
+    // The Board class only defines layout positions via the FEN parser — it does not own or contain the piece instances.
+    // (later make board container and handle that)
+    const stage = this.parent;
 
-    console.log('xxx this', this);
-    console.log('xxx this.parent', this.parent);
+    console.log('xxx stage', stage);
 
     stage?.on("pointermove", this.onDragMove, this);
   }
@@ -79,8 +81,8 @@ export class Piece extends Container {
 
     const parentPos = this.parent?.toLocal(e.global) ?? { x: 0, y: 0 };
     this.position.set(
-      parentPos.x + this.dragOffset.x,
-      parentPos.y + this.dragOffset.y
+      parentPos.x,// + this.dragOffset.x,
+      parentPos.y,// + this.dragOffset.y
     );
   }
 
@@ -90,7 +92,7 @@ export class Piece extends Container {
     this.dragging = false;
     this.alpha = 1;
 
-    const stage = this.scene ? this.scene.stage : this.parent;
+    const stage = this.parent;
     stage?.off("pointermove", this.onDragMove, this);
 
     // Here: add snap-to-grid or target‐field logic
@@ -98,4 +100,4 @@ export class Piece extends Container {
   }
 
 }
-// https://pixijs.com/7.x/examples/events/dragging ???
+// https://pixijs.com/7.x/examples/events/dragging 
