@@ -1,10 +1,10 @@
-import { Assets, Container, Sprite, FederatedPointerEvent } from "pixi.js";
+import { Assets, Container, Sprite, FederatedPointerEvent, Graphics, Rectangle } from "pixi.js";
 
 export class Piece extends Container {
 
   private piece: Container;
-  private dragOffset = { x: 25, y: 25 }; // on a start of drag piece will be moved a bit and during drag it will be moved by these values relative to cursor
-  private dragging = false;
+  private dragOffset = { x: 0, y: 0 }; // on a start of drag piece will be moved a bit and during drag it will be moved by these values relative to cursor
+  private dragging = false; // for reasurrance variable
   constructor(type: string, color: "w" | "b") {
     super();
     const key = `${type}-${color}`;
@@ -14,8 +14,18 @@ export class Piece extends Container {
 
     const sprite = new Sprite(texture); // in future can be spine or movieclip if i want my pieces animated
     sprite.anchor.set(0.5);
-    sprite.scale.set(2);
+    sprite.scale.set(1);
     this.piece = sprite; // underscore for private fields
+    this.addChild(sprite);
+
+    let transparentBackground = new Graphics().rect(
+      -150, -150, 300, 300
+    ).fill(0xff0000);
+    transparentBackground.alpha = 0.5;
+    this.addChild(transparentBackground);
+
+    this.piece.hitArea = new Rectangle(-150, -150, 300, 300);
+
     this.addChild(sprite);
 
 
@@ -43,7 +53,7 @@ export class Piece extends Container {
       .on("pointerupoutside", this.onDragEnd, this);
   }
 
-    private onDragStart(e: FederatedPointerEvent) {
+  private onDragStart(e: FederatedPointerEvent) {
     this.dragging = true;
     this.alpha = 0.7;
 
@@ -56,20 +66,26 @@ export class Piece extends Container {
     this.dragOffset.y = this.y - parentPos.y;
 
     // Attach pointermove on stage / parent so we keep receiving moves 
-    const stage = this.scene ? this.scene.stage : this.parent; // get stage or parent
+    const stage = this.parent; // get stage or parent
+
+    console.log('xxx this', this);
+    console.log('xxx this.parent', this.parent);
+
     stage?.on("pointermove", this.onDragMove, this);
   }
 
   private onDragMove(e: FederatedPointerEvent) {
-    // if (!this.dragging) return;
+    if (!this.dragging) return;
 
     const parentPos = this.parent?.toLocal(e.global) ?? { x: 0, y: 0 };
-    this.position.set(parentPos.x + this.dragOffset.x,
-                      parentPos.y + this.dragOffset.y);
+    this.position.set(
+      parentPos.x + this.dragOffset.x,
+      parentPos.y + this.dragOffset.y
+    );
   }
 
   private onDragEnd(e: FederatedPointerEvent) {
-    // if (!this.dragging) return;
+    if (!this.dragging) return;
 
     this.dragging = false;
     this.alpha = 1;
