@@ -1,4 +1,4 @@
-import { Container, Graphics, Text } from "pixi.js";
+import { Container, Graphics, Text, TextStyle } from "pixi.js";
 import { boardConfig } from "./boardConfig";
 import { Piece } from "./piece";
 import { Field } from "./field";
@@ -45,19 +45,28 @@ export class Board {
                 // Wrap the square in a container
                 const occupiedBy: Piece | null = null;
                 const position = { x, y };
-
+                const style = new TextStyle({
+                    fontSize: 48,
+                    fill: 0x000000,
+                });
+                const text = new Text({ text: notation, style: style });
+                text.position.set(
+                    x + this.config.textOffset, 
+                    y + this.config.textOffset 
+                );
                 const field = new Field(
                     id,
                     notation,
                     occupiedBy,
                     position,
-                    // graphics: square,
-
+                    square, // graphics
+                    text
                 );
 
                 row.push(field);
 
                 boardContainer.addChild(square);
+                boardContainer.addChild(text);
             }
             // console.log('xxx row', row);
             this.fields.push(row);
@@ -101,6 +110,12 @@ export class Board {
                         payload => this.handlePieceDrop(payload)
                     )
                 );
+
+                piece.onMoved.add(
+                    new Listener<{ pieceId: number; x: number; y: number }>(
+                        payload => this.handlePieceMove(payload)
+                    )
+                );
             }
         }
 
@@ -123,6 +138,26 @@ export class Board {
                 nearest.getPosition().y + this.config.squareWidth / 2
             );
         }
+    }
+
+    private handlePieceMove({ pieceId, x, y }: { pieceId: number; x: number; y: number }) {
+
+        const nearest = this.findNearestField(x, y);
+        if (!nearest) return;
+
+        // console.log(
+        //     `Piece ${pieceId} snaps to field ${nearest.getNotation()} at (${nearest.getPosition().x}, ${nearest.getPosition().y})`
+        // );
+
+        // // Move the actual piece
+        // // const piece = this.findPieceById(pieceId);
+        // // if (piece) {
+        // //     piece.position.set(
+        // //         nearest.getPosition().x + this.config.squareWidth / 2, // cause anchor of square is not in the middle
+        // //         nearest.getPosition().y + this.config.squareWidth / 2
+        // //     );
+        // // }
+        // nearest.getGraphics().clear();
     }
 
     private findNearestField(px: number, py: number): Field | null {

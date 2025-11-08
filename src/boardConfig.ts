@@ -11,4 +11,5 @@ export const boardConfig = {
         x: 1250,
         y: 750
     },
+    textOffset : 245,
 };

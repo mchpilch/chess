@@ -1,6 +1,6 @@
 import { Graphics } from "pixi.js";
 import { Piece } from "./piece";
-
+import {Text, TextStyle } from "pixi.js";
 export class Field {
 
     private id!: number; // 0–63
@@ -36,5 +36,9 @@ export class Field {
 
     getNotation() {
         return this.notation;
+    }
+
+    getGraphics() {
+        return this.graphics;
     }
 }
