@@ -4,15 +4,6 @@ import { Piece } from "./piece";
 import { Field } from "./field";
 import { Listener } from "./listener";
 
-// export type Field = {
-
-//     id: number; // 0–63
-//     notation: string; // "a1","a2", ..., "h8"
-//     position: { x: number; y: number };
-//     occupiedBy: Piece | null;
-//     graphics: Graphics;  // the square background
-//     text: Text;
-// };
 
 export class Board {
 
@@ -25,11 +16,6 @@ export class Board {
 
         this.fields = [];
         this.board = this.generateBoard();
-
-        const listener = new Listener(({ pieceId, x, y }) => {
-            console.log(`Piece ${pieceId} dropped at (${x},${y})`);
-        });
-
     }
 
     private generateBoard(): Container {
@@ -73,7 +59,7 @@ export class Board {
 
                 boardContainer.addChild(square);
             }
-            console.log('xxx row', row);
+            // console.log('xxx row', row);
             this.fields.push(row);
         }
 
@@ -82,24 +68,90 @@ export class Board {
     };
 
 
-    public updateOccupationOfFieds() {
-        let rowNumber = 0;
-        for (let r = 0; r < this.config.numberOfRows; r++) {
-            rowNumber++;
-            for (let f = 0; f < this.config.numberOfFiles; f++) {
+    // public updateOccupationOfFieds() {
+    //     let rowNumber = 0;
+    //     for (let r = 0; r < this.config.numberOfRows; r++) {
+    //         rowNumber++;
+    //         for (let f = 0; f < this.config.numberOfFiles; f++) {
 
-            }
-            this.fields.forEach(
-                (row) => row.forEach((field) => {
+    //         }
+    //     }
 
-                    field.setOccupiedBy(this.pieceBoard[Math.floor(field.id / 8)][field.id % 8]);
-                }));
-            console.log('xxx this.fields', this.fields);
-        }
-    }
+    //     this.fields.forEach(
+    //         (row) => row.forEach((field) => {
+
+    //             field.setOccupiedBy(this.pieceBoard[Math.floor(field.id / 8)][field.id % 8]);
+    //         }));
+    //     console.log('xxx this.fields', this.fields);
+    // }
 
     public getBoard(): Container { return this.board; }
 
     // PieceBoard is a datastructure to hold pieces (sprites) in arr[][]
-    public setPieceBoard(pieceBoard: (Piece | null)[][]) { this.pieceBoard = pieceBoard; }
+    public setPieceBoard(pieceBoard: (Piece | null)[][]) {
+        this.pieceBoard = pieceBoard;
+        console.log('xxx pieceBoard', pieceBoard);
+        // Attach listeners to all pieces
+        for (const row of pieceBoard) {
+            for (const piece of row) {
+                if (!piece) continue;
+
+                piece.onDropped.add(
+                    new Listener<{ pieceId: number; x: number; y: number }>(
+                        payload => this.handlePieceDrop(payload)
+                    )
+                );
+            }
+        }
+
+    }
+
+    private handlePieceDrop({ pieceId, x, y }: { pieceId: number; x: number; y: number }) {
+
+        const nearest = this.findNearestField(x, y);
+        if (!nearest) return;
+
+        console.log(
+            `Piece ${pieceId} snaps to field ${nearest.getNotation()} at (${nearest.getPosition().x}, ${nearest.getPosition().y})`
+        );
+
+        // Move the actual piece
+        const piece = this.findPieceById(pieceId);
+        if (piece) {
+            piece.position.set(
+                nearest.getPosition().x + this.config.squareWidth / 2, // cause anchor of square is not in the middle
+                nearest.getPosition().y + this.config.squareWidth / 2
+            );
+        }
+    }
+
+    private findNearestField(px: number, py: number): Field | null {
+        let nearest: Field | null = null;
+        let shortest = Infinity;
+
+        for (const row of this.fields) {
+            for (const field of row) {
+                const dx = px - field.getPosition().x;
+                const dy = py - field.getPosition().y;
+                const distSq = dx * dx + dy * dy;
+
+                if (distSq < shortest) {
+                    shortest = distSq;
+                    nearest = field;
+                }
+            }
+        }
+
+        return nearest;
+    }
+
+    private findPieceById(id: number): Piece | null {
+        for (const row of this.pieceBoard) {
+            for (const piece of row) {
+                if (piece && piece.getId() === id) return piece;
+            }
+        }
+        return null;
+    }
+
 }

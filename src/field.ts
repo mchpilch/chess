@@ -29,4 +29,12 @@ export class Field {
     setOccupiedBy(piece: Piece | null) {
         this.occupiedBy = piece;
     }   
+
+    getPosition() {
+        return this.position;
+    }
+
+    getNotation() {
+        return this.notation;
+    }
 }

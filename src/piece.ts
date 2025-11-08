@@ -14,8 +14,6 @@ export class Piece extends Container {
 
     const key = `${type}-${color}`;
     const texture = Assets.get(key);
-    // console.log('xxx key',key);
-    // console.log('xxx texture',texture);
 
     const sprite = new Sprite(texture); // in future can be spine or movieclip if i want my pieces animated
     sprite.anchor.set(0.5);
@@ -34,6 +32,9 @@ export class Piece extends Container {
     this.piece.eventMode = 'static';     // enable the piece to be interactive... this will allow it to respond to mouse and touch events - from https://pixijs.com/7.x/examples/events/dragging
 
     this.addChild(this.piece);
+
+    this.id = id;
+
     this.addFieldEvents();
   }
 
@@ -101,10 +102,14 @@ export class Piece extends Container {
 
     // Fire the signal
     this.onDropped.fire({
-        pieceId: this.id,  // you need to add a unique `id` property to Piece
-        x: this.x,
-        y: this.y
+      pieceId: this.id, 
+      x: this.x,
+      y: this.y
     });
+  }
+
+  public getId(): number {
+    return this.id;
   }
 
 }

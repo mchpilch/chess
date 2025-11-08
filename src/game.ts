@@ -80,7 +80,7 @@ export class Game {
             }
         }
 
-        gameBoard.updateOccupationOfFieds();
+        // gameBoard.updateOccupationOfFieds();
 
 
         // const fenParser2 = new FenParser('4k2r/6r1/8/8/8/8/3R4/R3K3 w Qk - 0 1');
