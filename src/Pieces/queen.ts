@@ -1,8 +1,8 @@
 import { Piece } from "../piece";
 
 export class Queen extends Piece {
-  constructor(color: "w" | "b") {
+  constructor(color: "w" | "b", id: number) {
     // Call the base class with type "queen" and color
-    super("queen", color);
+    super("queen", color, id);
   }
 }

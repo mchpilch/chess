@@ -8,12 +8,15 @@ import { Rook } from "./Pieces/rook";
 
 export type Square = (Piece | null);
 export type Board = Square[][];
+// type PieceKey = 'r' | 'n' | 'b' | 'q' | 'k' | 'p'; // add
 
 export class FenParser {
 
     //The sequence "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR" 
     // describes the piece placement field of the starting position of a game of chess.
     private board!: Board;
+    private nextPieceId = 0; // in future consider mechanism that generates unique ids not in fen parser but while instantiating the piece
+
     private activeColor!: 'w' | 'b';
     private castlingRights!: { K: true, Q: true, k: true, q: true }; // todo
     private enPassant!: string | null; // todo
@@ -32,7 +35,7 @@ export class FenParser {
     // }
 
     public getBoard(): Board {
-        
+
         return this.board;
     }
 
@@ -55,7 +58,6 @@ export class FenParser {
     }
 
     private parseBoard(notation: string): Board {
-        // public parseBoard(notation: string): void {
         console.log("xxxx  parseBoard")
         let board: Board = [];
 
@@ -73,91 +75,56 @@ export class FenParser {
 
         let maxIterations = 1000; // safety limit
         let iterations = 0;
+        // instead of sting test PieceKey type later
+        const pieceMap: Record<string, (color: 'w' | 'b') => Piece> = { // Record of (string,function) -> keys - strings (r,n,b...) and values are (color: 'w' | 'b') => Piece (functions that take 'w' or 'b' and return a Piece)
+            'r': (color) => new Rook(color, this.nextPieceId++),
+            'n': (color) => new Knight(color, this.nextPieceId++),
+            'b': (color) => new Bishop(color, this.nextPieceId++),
+            'q': (color) => new Queen(color, this.nextPieceId++),
+            'k': (color) => new King(color, this.nextPieceId++),
+            'p': (color) => new Pawn(color, this.nextPieceId++),
+        };
 
-        console.log('xxxx notation.length', notation.length)
         while (n < notation.length) {
 
+            const char = notation[n];
+
             iterations++;
-            if (iterations > maxIterations) {
+            if (iterations > maxIterations) { // just for safety with while loop
                 console.warn("Breaking loop: too many iterations!");
                 break;
             }
 
-            if (notation[n] === '/') { // new row
-                console.log('xxxx / on index', n)
+            if (char === '/') { // new row
                 n++;
                 rowIndex++;
                 colIndex = 0;
                 continue;
             }
 
-            if (isNaN(Number(notation[n])) === false) { // so it is a number then
-                console.log('xxxx number ', Number(notation[n]), ' on index', n)
-
-                colIndex += Number(notation[n]);
+            if (isNaN(Number(char)) === false) { // when char isnumber
+                colIndex += Number(char);
                 n++;
                 continue;
             }
-            console.log('xxx n', n)
 
-            switch (notation[n]) { // todo create dynamic mapping to get rid off switch cases
-                case 'r':
-                    board[rowIndex][colIndex] = new Rook('b');
-                    break;
+            // Determine piece color
+            const color: 'w' | 'b' = char === char.toUpperCase() ? 'w' : 'b';
+            const pieceKey = char.toLowerCase();
 
-                case 'n':
-                    board[rowIndex][colIndex] = new Knight('b');
-                    break;
+            // Examples:
+            // const whiteRook = pieceMap['r']('w'); // returns a Rook instance with color 'w'
+            // const blackPawn = pieceMap['p']('b'); // returns a Pawn instance with color 'b'
 
-                case 'b':
-                    board[rowIndex][colIndex] = new Bishop('b');
-                    break;
-
-                case 'q':
-                    board[rowIndex][colIndex] = new Queen('b');
-                    break;
-
-                case 'k':
-                    board[rowIndex][colIndex] = new King('b');
-                    break;
-
-                case 'p':
-                    board[rowIndex][colIndex] = new Pawn('b');
-                    break;
-
-                case 'R':
-                    board[rowIndex][colIndex] = new Rook('w');
-                    break;
-
-                case 'N':
-                    board[rowIndex][colIndex] = new Knight('w');
-                    break;
-
-                case 'B':
-                    board[rowIndex][colIndex] = new Bishop('w');
-                    break;
-
-                case 'Q':
-                    board[rowIndex][colIndex] = new Queen('w');
-                    break;
-
-                case 'K':
-                    board[rowIndex][colIndex] = new King('w');
-                    break;
-
-                case 'P':
-                    board[rowIndex][colIndex] = new Pawn('w');
-                    break;
-
-                default:
-                    // handle other FEN characters here (digits, '/', etc.)
-                    break;
+            const createPiece = pieceMap[pieceKey];
+            if (createPiece) {
+                board[rowIndex][colIndex] = createPiece(color);
+            } else {
+                console.warn(`Unknown piece symbol '${char}'`);
             }
 
-            console.log('piece on index', n)
             n++;
             colIndex++;
-
         }
 
         return board;

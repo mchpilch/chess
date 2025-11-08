@@ -1,13 +1,17 @@
 import { Assets, Container, Sprite, FederatedPointerEvent, Graphics, Rectangle } from "pixi.js";
+import { Signal } from "./signal";
 
 export class Piece extends Container {
 
   private piece: Container;
+  private id: number;
   // private dragOffset = { x: 0, y: 0 }; // on a start of drag piece will be moved a bit and during drag it will be moved by these values relative to cursor
   private dragging = false; // for reasurrance variable
+  public onDropped = new Signal<{ pieceId: number, x: number, y: number }>();
 
-  constructor(type: string, color: "w" | "b") {
+  constructor(type: string, color: "w" | "b", id: number) {
     super();
+
     const key = `${type}-${color}`;
     const texture = Assets.get(key);
     // console.log('xxx key',key);
@@ -95,8 +99,12 @@ export class Piece extends Container {
     const stage = this.parent;
     stage?.off("pointermove", this.onDragMove, this);
 
-    // Here: add snap-to-grid or target‐field logic
-    // e.g., this.snapToField();
+    // Fire the signal
+    this.onDropped.fire({
+        pieceId: this.id,  // you need to add a unique `id` property to Piece
+        x: this.x,
+        y: this.y
+    });
   }
 
 }
