@@ -1,6 +1,6 @@
 import { Graphics } from "pixi.js";
 import { Piece } from "./piece";
-import {Text, TextStyle } from "pixi.js";
+import { Text, TextStyle } from "pixi.js";
 export class Field {
 
     private id!: number; // 0–63
@@ -21,25 +21,29 @@ export class Field {
 
         this.id = id;
         this.notation = notation;
-        this.occupiedBy = occupiedBy;   
+        this.occupiedBy = occupiedBy;
         // this.graphics.anchor.set(0.5);
 
         this.position = position ?? { x: 0, y: 0 };
     }
 
-    setOccupiedBy(piece: Piece | null) {
+    public setOccupiedBy(piece: Piece | null) {
         this.occupiedBy = piece;
-    }   
+    }
 
-    getPosition() {
+    public getOccupiedBy() {
+        return this.occupiedBy;
+    }
+
+    public getPosition() {
         return this.position;
     }
 
-    getNotation() {
+    public getNotation() {
         return this.notation;
     }
 
-    getGraphics() {
+    public getGraphics() {
         return this.graphics;
     }
 }

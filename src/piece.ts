@@ -115,4 +115,3 @@ export class Piece extends Container {
   }
 
 }
-// https://pixijs.com/7.x/examples/events/dragging 

@@ -18,3 +18,4 @@
 // https://pixijs.io/devtools/docs/guide/installation/
 // https://chromewebstore.google.com/detail/pixijs-devtools/dlkffcaaoccbofklocbjcmppahjjboce
 
+// https://pixijs.com/7.x/examples/events/dragging 

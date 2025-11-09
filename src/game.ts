@@ -4,30 +4,18 @@ import { Application } from 'pixi.js';
 import { FenParser } from './fenParser';
 import { Board } from './board';
 
-//TODO:
-// - move piece (drag system and release system - gravity to squre)
-// - castling FEN
-// - en passant FEN
-// - half move clock FEN
-// - full move number FEN
-// - check and checkmate
-// - move validation
-// - promotion
-// - game over
-// - move history
-// - undo move
-// - restart game
 type GameInitData = {
     app: Application,
 };
 
 export class Game {
 
-    static instance: Game;
+    private static instance: Game;
     private initialized!: boolean;
 
     private app!: Application;
-    private tempParser!: FenParser
+    private fenParser!: FenParser;
+    private gameBoard!: Board;
 
     private constructor() {
         this.initialized = false;
@@ -48,55 +36,46 @@ export class Game {
             return;
         }
         this.initialized = true;
-        // this.tempParser = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
-        // this.tempParser = new FenParser('r1bk3r/p2pBpNp/n4n2/1p1NP2P/6P1/3P4/P1P1K3/q5b1 w KQkq - 0 1');
-        this.tempParser = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq i3 0 1'); // starting pos
-        // this.tempParser = new FenParser('r7/8/8/8/8/8/8/8 w KQkq i3 0 1'); // jsut rook
-
+        // this.fenParser = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+        // this.fenParser = new FenParser('r1bk3r/p2pBpNp/n4n2/1p1NP2P/6P1/3P4/P1P1K3/q5b1 w KQkq - 0 1');
+        // this.fenParser = new FenParser('4k2r/6r1/8/8/8/8/3R4/R3K3 w Qk - 0 1');
+        // this.fenParser = new FenParser('r7/8/8/8/8/8/8/8 w KQkq i3 0 1'); // only rook
+        this.fenParser = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq i3 0 1'); // starting pos
+        
         // setup managers
         this.app = gameInitData.app;
 
         console.log('this.app', this.app);
 
-        let gameBoard = new Board();
+        this.gameBoard = new Board();
         this.app.stage.interactive = true;
 
-        // const fenParser1 = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
-        let pieceBoard = this.tempParser.getBoard();
+        let pieceBoard = this.fenParser.getBoard();
         console.log('pieceBoard', pieceBoard);
-        gameBoard.setPieceBoard(pieceBoard);
-        this.app.stage.addChild(gameBoard.getBoard());
+        this.gameBoard.setPieceBoard(pieceBoard);
+        this.app.stage.addChild(this.gameBoard.getBoard());
 
         const offsetX = 1250;
         const offsetY = 750;
 
-        // const offsetX = 0;
-        // const offsetY = 0;
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
 
                 if (pieceBoard[i][j] !== null) {
                     pieceBoard[i][j]!.position.set(offsetX + j * 300 + 150, offsetY + i * 300 + 150);
-                    // console.log(`adding board[${i}][${j}]`, board[i][j]);
                     this.app.stage.addChild(pieceBoard[i][j]!);
                 }
 
             }
         }
 
-
-        this.app.stage.on('pointermove', e => {
-            const pos = e.global;
-            const boardLocal = gameBoard.getBoard().toLocal(pos);
-            console.log('pppp board-local:', boardLocal.x, boardLocal.y);
-        });
-
-
         // gameBoard.updateOccupationOfFieds();
-
-
-        // const fenParser2 = new FenParser('4k2r/6r1/8/8/8/8/3R4/R3K3 w Qk - 0 1');
     }
 }
 
 
+// this.app.stage.on('pointermove', e => {
+//     const pos = e.global;
+//     const boardLocal = this.gameBoard.getBoard().toLocal(pos);
+//     // console.log('pppp board-local:', boardLocal.x, boardLocal.y);
+// });

@@ -51,8 +51,8 @@ export class Board {
                 });
                 const text = new Text({ text: notation, style: style });
                 text.position.set(
-                    x + this.config.textOffset, 
-                    y + this.config.textOffset 
+                    x + this.config.textOffset,
+                    y + this.config.textOffset
                 );
                 const field = new Field(
                     id,
@@ -121,6 +121,12 @@ export class Board {
 
     }
 
+    public getPieceBoard(): (Piece | null)[][] {
+
+        console.log('xxx this.pieceBoard', this.pieceBoard);
+        return this.pieceBoard;
+    }
+
     private handlePieceDrop({ pieceId, x, y }: { pieceId: number; x: number; y: number }) {
 
         const nearest = this.findNearestField(x, y);
@@ -129,6 +135,10 @@ export class Board {
         console.log(
             `Piece ${pieceId} snaps to field ${nearest.getNotation()} at (${nearest.getPosition().x}, ${nearest.getPosition().y})`
         );
+
+        if (nearest.getOccupiedBy() !== null) {
+
+        }
 
         // Move the actual piece
         const piece = this.findPieceById(pieceId);
@@ -174,7 +184,7 @@ export class Board {
                 if (distSq < shortest) {
                     shortest = distSq;
                     nearest = field;
-                    console.log('xxx field distSq', distSq, ' for ' , field.getNotation());
+                    console.log('xxx field distSq', distSq, ' for ', field.getNotation());
                     debListOfnearest.push(nearest);
                 }
             }
