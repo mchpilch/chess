@@ -21,7 +21,8 @@ export class Field {
 
         this.id = id;
         this.notation = notation;
-        this.occupiedBy = occupiedBy;    
+        this.occupiedBy = occupiedBy;   
+        // this.graphics.anchor.set(0.5);
 
         this.position = position ?? { x: 0, y: 0 };
     }

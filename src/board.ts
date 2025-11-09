@@ -29,8 +29,8 @@ export class Board {
                 const id = r * this.config.numberOfRows + f;
                 const notation = `${String.fromCharCode(97 + f)}${this.config.numberOfRows - r}`; // a1..h8 // 97 is a lowercase "a" // files got letters while rows have numbers
 
-                const x = this.config.offset.x + f * this.config.squareWidth - this.config.squareWidth / 2; //  - this.config.squareWidth / 2 is necessary as pieces are anchored in the middle of spites 
-                const y = this.config.offset.y + r * this.config.squareWidth - this.config.squareWidth / 2; // 
+                const x = this.config.offset.x + f * this.config.squareWidth; //  - this.config.squareWidth / 2 is necessary as pieces are anchored in the middle of spites 
+                const y = this.config.offset.y + r * this.config.squareWidth; // 
 
                 const color = (r + f) % 2 === 0 ? this.config.colorDark : this.config.colorLight;
                 const square = new Graphics()
@@ -111,11 +111,11 @@ export class Board {
                     )
                 );
 
-                piece.onMoved.add(
-                    new Listener<{ pieceId: number; x: number; y: number }>(
-                        payload => this.handlePieceMove(payload)
-                    )
-                );
+                // piece.onMoved.add(
+                //     new Listener<{ pieceId: number; x: number; y: number }>(
+                //         payload => this.handlePieceMove(payload)
+                //     )
+                // );
             }
         }
 
@@ -145,9 +145,9 @@ export class Board {
         const nearest = this.findNearestField(x, y);
         if (!nearest) return;
 
-        // console.log(
-        //     `Piece ${pieceId} snaps to field ${nearest.getNotation()} at (${nearest.getPosition().x}, ${nearest.getPosition().y})`
-        // );
+        console.log(
+            `Piece ${pieceId} snaps to field ${nearest.getNotation()} at (${nearest.getPosition().x}, ${nearest.getPosition().y})`
+        );
 
         // // Move the actual piece
         // // const piece = this.findPieceById(pieceId);
@@ -163,20 +163,24 @@ export class Board {
     private findNearestField(px: number, py: number): Field | null {
         let nearest: Field | null = null;
         let shortest = Infinity;
-
+        let debListOfnearest = [];
         for (const row of this.fields) {
             for (const field of row) {
-                const dx = px - field.getPosition().x;
-                const dy = py - field.getPosition().y;
+                console.log('xxx field');
+                const dx = px - field.getPosition().x - this.config.squareWidth / 2;
+                const dy = py - field.getPosition().y - this.config.squareWidth / 2;
                 const distSq = dx * dx + dy * dy;
 
                 if (distSq < shortest) {
                     shortest = distSq;
                     nearest = field;
+                    console.log('xxx field distSq', distSq, ' for ' , field.getNotation());
+                    debListOfnearest.push(nearest);
                 }
             }
         }
 
+        console.log('xxx debListOfnearest', debListOfnearest);
         return nearest;
     }
 

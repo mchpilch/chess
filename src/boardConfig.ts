@@ -7,6 +7,10 @@ export const boardConfig = {
     colorDark: '#9e705b',
     colorLight: '#e8d3b8',
     // colorLight: '#4b734eff',
+    // offset : {
+    //     x: 0,
+    //     y: 0
+    // },
     offset : {
         x: 1250,
         y: 750

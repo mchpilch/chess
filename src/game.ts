@@ -50,7 +50,8 @@ export class Game {
         this.initialized = true;
         // this.tempParser = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
         // this.tempParser = new FenParser('r1bk3r/p2pBpNp/n4n2/1p1NP2P/6P1/3P4/P1P1K3/q5b1 w KQkq - 0 1');
-        this.tempParser = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq i3 0 1');
+        this.tempParser = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq i3 0 1'); // starting pos
+        // this.tempParser = new FenParser('r7/8/8/8/8/8/8/8 w KQkq i3 0 1'); // jsut rook
 
         // setup managers
         this.app = gameInitData.app;
@@ -68,17 +69,28 @@ export class Game {
 
         const offsetX = 1250;
         const offsetY = 750;
+
+        // const offsetX = 0;
+        // const offsetY = 0;
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
 
                 if (pieceBoard[i][j] !== null) {
-                    pieceBoard[i][j]!.position.set(offsetX + j * 300, offsetY + i * 300);
+                    pieceBoard[i][j]!.position.set(offsetX + j * 300 + 150, offsetY + i * 300 + 150);
                     // console.log(`adding board[${i}][${j}]`, board[i][j]);
                     this.app.stage.addChild(pieceBoard[i][j]!);
                 }
 
             }
         }
+
+
+        this.app.stage.on('pointermove', e => {
+            const pos = e.global;
+            const boardLocal = gameBoard.getBoard().toLocal(pos);
+            console.log('pppp board-local:', boardLocal.x, boardLocal.y);
+        });
+
 
         // gameBoard.updateOccupationOfFieds();
 
