@@ -68,11 +68,8 @@ export class Board {
                 boardContainer.addChild(square);
                 boardContainer.addChild(text);
             }
-            // console.log('xxx row', row);
             this.fields.push(row);
         }
-
-        console.log('xxx this.fields', this.fields);
         return boardContainer;
     };
 
@@ -132,9 +129,7 @@ export class Board {
         const nearest = this.findNearestField(x, y);
         if (!nearest) return;
 
-        console.log(
-            `Piece ${pieceId} snaps to field ${nearest.getNotation()} at (${nearest.getPosition().x}, ${nearest.getPosition().y})`
-        );
+        console.log(`Piece with id ${pieceId} snaps to field ${nearest.getNotation()}`);
 
         if (nearest.getOccupiedBy() !== null) {
 
@@ -158,25 +153,14 @@ export class Board {
         console.log(
             `Piece ${pieceId} snaps to field ${nearest.getNotation()} at (${nearest.getPosition().x}, ${nearest.getPosition().y})`
         );
-
-        // // Move the actual piece
-        // // const piece = this.findPieceById(pieceId);
-        // // if (piece) {
-        // //     piece.position.set(
-        // //         nearest.getPosition().x + this.config.squareWidth / 2, // cause anchor of square is not in the middle
-        // //         nearest.getPosition().y + this.config.squareWidth / 2
-        // //     );
-        // // }
-        // nearest.getGraphics().clear();
     }
 
     private findNearestField(px: number, py: number): Field | null {
         let nearest: Field | null = null;
         let shortest = Infinity;
-        let debListOfnearest = [];
         for (const row of this.fields) {
             for (const field of row) {
-                console.log('xxx field');
+
                 const dx = px - field.getPosition().x - this.config.squareWidth / 2;
                 const dy = py - field.getPosition().y - this.config.squareWidth / 2;
                 const distSq = dx * dx + dy * dy;
@@ -184,13 +168,10 @@ export class Board {
                 if (distSq < shortest) {
                     shortest = distSq;
                     nearest = field;
-                    console.log('xxx field distSq', distSq, ' for ', field.getNotation());
-                    debListOfnearest.push(nearest);
                 }
             }
         }
 
-        console.log('xxx debListOfnearest', debListOfnearest);
         return nearest;
     }
 

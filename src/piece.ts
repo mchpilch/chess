@@ -86,7 +86,6 @@ export class Piece extends Container {
     if (!this.dragging) return;
 
     const parentPos = this.parent?.toLocal(e.global) ?? { x: 0, y: 0 };
-    console.log('xxx this.partent', this.parent);
     this.position.set(
       parentPos.x,// + this.dragOffset.x,
       parentPos.y,// + this.dragOffset.y
@@ -112,6 +111,10 @@ export class Piece extends Container {
 
   public getId(): number {
     return this.id;
+  }
+
+  public getPieceTypeById(id: number): string | null {
+    return null;
   }
 
 }
