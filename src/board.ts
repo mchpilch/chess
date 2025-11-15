@@ -130,10 +130,20 @@ export class Board {
         if (!nearest) return;
 
         console.log(`Piece with id ${pieceId} snaps to field ${nearest.getNotation()}`);
+        if (nearest.getOccupiedBy() === null) {
+            nearest.setOccupiedBy(this.findPieceById(pieceId));
+        } else {// another piece is already here
+            // more logic will be here
+            console.log(`Field is already occupied by:
+                 color  ${nearest.getOccupiedBy()?.getPieceColor()}
+                 role   ${nearest.getOccupiedBy()?.getPieceRole()}
+                 id     ${nearest.getOccupiedBy()?.getId()}
+                 key    ${nearest.getOccupiedBy()?.getPieceKey()}
+            `);
 
-        if (nearest.getOccupiedBy() !== null) {
-
+            nearest.getOccupiedBy()!.visible = false;
         }
+
 
         // Move the actual piece
         const piece = this.findPieceById(pieceId);
@@ -143,6 +153,8 @@ export class Board {
                 nearest.getPosition().y + this.config.squareWidth / 2
             );
         }
+
+        console.log('xxx pieceBoard', this.pieceBoard);
     }
 
     private handlePieceMove({ pieceId, x, y }: { pieceId: number; x: number; y: number }) {
@@ -183,5 +195,7 @@ export class Board {
         }
         return null;
     }
+
+    public getFields(): Field[][] { return this.fields; }
 
 }

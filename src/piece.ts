@@ -8,11 +8,17 @@ export class Piece extends Container {
   // private dragOffset = { x: 0, y: 0 }; // on a start of drag piece will be moved a bit and during drag it will be moved by these values relative to cursor
   private dragging = false; // for reasurrance variable
   public onDropped = new Signal<{ pieceId: number, x: number, y: number }>();
+  private color: "w" | "b";
+  private role: 'r' | 'n' | 'b' | 'q' | 'k' | 'p';
+  private key: string;
 
   constructor(type: string, color: "w" | "b", id: number) {
     super();
 
+    this.color = color;
+    this.role = type.toLocaleLowerCase() as 'r' | 'n' | 'b' | 'q' | 'k' | 'p'; // improve later 
     const key = `${type}-${color}`;
+    this.key = key;
     const texture = Assets.get(key);
 
     const sprite = new Sprite(texture); // in future can be spine or movieclip if i want my pieces animated
@@ -103,7 +109,7 @@ export class Piece extends Container {
 
     // Fire the signal
     this.onDropped.fire({
-      pieceId: this.id, 
+      pieceId: this.id,
       x: this.x,
       y: this.y
     });
@@ -112,9 +118,15 @@ export class Piece extends Container {
   public getId(): number {
     return this.id;
   }
+  public getPieceColor(): string {
+    return this.color;
+  }
+  public getPieceRole(): string {
+    return this.role;
+  }
 
-  public getPieceTypeById(id: number): string | null {
-    return null;
+  public getPieceKey(): string {
+    return this.key;
   }
 
 }

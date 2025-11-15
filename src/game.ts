@@ -63,6 +63,7 @@ export class Game {
 
                 if (pieceBoard[i][j] !== null) {
                     pieceBoard[i][j]!.position.set(offsetX + j * 300 + 150, offsetY + i * 300 + 150);
+                    this.gameBoard.getFields()[i][j].setOccupiedBy((pieceBoard[i][j]));
                     this.app.stage.addChild(pieceBoard[i][j]!);
                 }
 
