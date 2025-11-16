@@ -4,20 +4,25 @@ import { GameState } from "./gameState";
 
 export class Piece extends Container {
 
-  private piece: Container;
-  private id: number;
-  // private dragOffset = { x: 0, y: 0 }; // on a start of drag piece will be moved a bit and during drag it will be moved by these values relative to cursor
-  private dragging = false; // for reasurrance variable
-  public onDropped = new Signal<{ pieceId: number, x: number, y: number }>();
-  private color: "w" | "b";
-  private role: 'r' | 'n' | 'b' | 'q' | 'k' | 'p';
-  private key: string;
+  private id!: number;
+  private dragging!: boolean;// for reasurrance variable
+  public onDropped!: Signal<{ pieceId: number, x: number, y: number }>;
+  private color!: "w" | "b";
+  private role!: 'r' | 'n' | 'b' | 'q' | 'k' | 'p';
+  private key!: string;
   private gameState!: GameState;
 
   constructor(type: string, color: "w" | "b", id: number) {
+
     super();
 
+    this.init(type, color, id);
+  }
+
+  private init(type: string, color: "w" | "b", id: number) {
     this.gameState = GameState.getInstance();
+    this.onDropped = new Signal<{ pieceId: number, x: number, y: number }>();
+    this.dragging = false;
     this.color = color;
     this.role = type.toLocaleLowerCase() as 'r' | 'n' | 'b' | 'q' | 'k' | 'p'; // improve later 
     const key = `${type}-${color}`;
@@ -28,43 +33,30 @@ export class Piece extends Container {
     sprite.anchor.set(0.5);
     sprite.scale.set(2);
     // sprite.scale.set(1);
-    this.piece = new Container();
 
     // Bg to visualize hit area
     let transparentBackground = new Graphics().rect(
       -150, -150, 300, 300
     ).fill(0xffff00);
     transparentBackground.alpha = 0.5;
-    this.piece.addChild(transparentBackground);
+    this.addChild(transparentBackground);
 
-    this.piece.addChild(sprite);
-    this.piece.hitArea = new Rectangle(-150, -150, 300, 300);
+    this.addChild(sprite);
+    this.hitArea = new Rectangle(-150, -150, 300, 300);
 
     if (this.gameState.getCurrentTurn() === this.color) { // 1st move is W
 
-      this.piece.eventMode = 'dynamic';     // enable the piece to be interactive... this will allow it to respond to mouse and touch events - from https://pixijs.com/7.x/examples/events/dragging
+      this.eventMode = 'dynamic';     // enable the piece to be interactive... this will allow it to respond to mouse and touch events - from https://pixijs.com/7.x/examples/events/dragging
     }
-
-    this.addChild(this.piece);
 
     this.id = id;
 
     this.addFieldEvents();
   }
 
-  get display(): Container {
-    return this.piece;
-  }
-
-  set display(newDisplay: Container) {
-    this.removeChild(this.piece);
-    this.piece = newDisplay;
-    this.addChild(newDisplay);
-  }
-
   // possible functions
   private addFieldEvents() {
-    this.piece
+    this
       .on("pointerdown", this.onDragStart, this)
       .on('pointerup', this.onDragEnd, this)
       .on("pointerupoutside", this.onDragEnd, this);
@@ -82,8 +74,8 @@ export class Piece extends Container {
     const parentPos = this.parent?.toLocal(e.global) ?? { x: 0, y: 0 };
 
     this.position.set(
-      parentPos.x,// + this.dragOffset.x,
-      parentPos.y,// + this.dragOffset.y
+      parentPos.x,
+      parentPos.y,
     );
     // For now (2025-11-05): 
     // The parent of each Piece is the PIXI stage, since pieces are added directly to it in Game.ts.
@@ -101,8 +93,8 @@ export class Piece extends Container {
 
     const parentPos = this.parent?.toLocal(e.global) ?? { x: 0, y: 0 };
     this.position.set(
-      parentPos.x,// + this.dragOffset.x,
-      parentPos.y,// + this.dragOffset.y
+      parentPos.x,
+      parentPos.y,
     );
 
   }

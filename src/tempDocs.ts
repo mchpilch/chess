@@ -19,3 +19,6 @@
 // https://chromewebstore.google.com/detail/pixijs-devtools/dlkffcaaoccbofklocbjcmppahjjboce
 
 // https://pixijs.com/7.x/examples/events/dragging 
+
+
+// https://refactoring.guru/design-patterns/mediator -> board ?

@@ -76,30 +76,12 @@ export class Board {
         return boardContainer;
     };
 
-
-    // public updateOccupationOfFieds() {
-    //     let rowNumber = 0;
-    //     for (let r = 0; r < this.config.numberOfRows; r++) {
-    //         rowNumber++;
-    //         for (let f = 0; f < this.config.numberOfFiles; f++) {
-
-    //         }
-    //     }
-
-    //     this.fields.forEach(
-    //         (row) => row.forEach((field) => {
-
-    //             field.setOccupiedBy(this.pieceBoard[Math.floor(field.id / 8)][field.id % 8]);
-    //         }));
-    //     console.log('xxx this.fields', this.fields);
-    // }
-
     public getBoard(): Container { return this.board; }
 
     // PieceBoard is a datastructure to hold pieces (sprites) in arr[][]
     public setPieceBoard(pieceBoard: (Piece | null)[][]) {
         this.pieceBoard = pieceBoard;
-        console.log('xxx pieceBoard', pieceBoard);
+
         // Attach listeners to all pieces
         for (const row of pieceBoard) {
             for (const piece of row) {
@@ -111,11 +93,7 @@ export class Board {
                     )
                 );
 
-                // piece.onMoved.add(
-                //     new Listener<{ pieceId: number; x: number; y: number }>(
-                //         payload => this.handlePieceMove(payload)
-                //     )
-                // );
+                console.log('xxx pieceBoard', pieceBoard);
             }
         }
 
@@ -123,7 +101,6 @@ export class Board {
 
     public getPieceBoard(): (Piece | null)[][] {
 
-        console.log('xxx this.pieceBoard', this.pieceBoard);
         return this.pieceBoard;
     }
 
@@ -155,7 +132,7 @@ export class Board {
                 nearest.getPosition().x + this.config.squareWidth / 2, // cause anchor of square is not in the middle
                 nearest.getPosition().y + this.config.squareWidth / 2
             );
-       
+
         }
 
         this.gameState.incrementMoveCount();
@@ -164,20 +141,13 @@ export class Board {
         console.log(this.gameState.getMoveCount());
 
         // handle interactivness for board
+        this.updatePieceBoard(piece, nearest);
+        this.updateFields();
         this.handleInteractivnessOfPiecesOnBoard();
 
         console.log('xxx pieceBoard', this.pieceBoard);
+        console.log('xxx getFields', this.getFields());
     }
-
-    // private handlePieceMove({ pieceId, x, y }: { pieceId: number; x: number; y: number }) {
-
-    //     const nearest = this.findNearestField(x, y);
-    //     if (!nearest) return;
-
-    //     console.log(
-    //         `Piece ${pieceId} snaps to field ${nearest.getNotation()} at (${nearest.getPosition().x}, ${nearest.getPosition().y})`
-    //     );
-    // }
 
     private findNearestField(px: number, py: number): Field | null {
         let nearest: Field | null = null;
@@ -207,6 +177,16 @@ export class Board {
         }
         return null;
     }
+    private updateFields(): void {
+
+        for (const row of this.fields) {
+            for (const field of row) {
+
+
+            }
+        }
+    }
+
 
     private handleInteractivnessOfPiecesOnBoard(): void {
 
@@ -215,11 +195,11 @@ export class Board {
                 if (piece) {
                     if (this.gameState.getCurrentTurn() === piece.getColor()) {
 
-                        piece.display.eventMode = 'dynamic';
+                        piece.eventMode = 'dynamic';
                         console.log(`xxx piece ${piece.getKey()} is dynamic`);
 
                     } else {
-                        piece.display.eventMode = 'none';
+                        piece.eventMode = 'none';
                         console.log(`xxx piece ${piece.getKey()} is none`);
                     }
                 }
