@@ -6,6 +6,7 @@ export class Piece extends Container {
 
   private id!: number;
   private dragging!: boolean;// for reasurrance variable
+  public onDragStarted!: Signal<{ pieceId: number, x: number, y: number }>;
   public onDropped!: Signal<{ pieceId: number, x: number, y: number }>;
   private color!: "w" | "b";
   private role!: 'r' | 'n' | 'b' | 'q' | 'k' | 'p';
@@ -20,41 +21,45 @@ export class Piece extends Container {
   }
 
   private init(type: string, color: "w" | "b", id: number) {
+
+    // Managers
     this.gameState = GameState.getInstance();
-    this.onDropped = new Signal<{ pieceId: number, x: number, y: number }>();
-    this.dragging = false;
+
+    // Atributers
+    this.id = id;
     this.color = color;
     this.role = type.toLocaleLowerCase() as 'r' | 'n' | 'b' | 'q' | 'k' | 'p'; // improve later 
     const key = `${type}-${color}`;
     this.key = key;
-    const texture = Assets.get(key);
 
+    const texture = Assets.get(key);
     const sprite = new Sprite(texture); // in future can be spine or movieclip if i want my pieces animated
     sprite.anchor.set(0.5);
     sprite.scale.set(2);
-    // sprite.scale.set(1);
 
-    // Bg to visualize hit area
-    let transparentBackground = new Graphics().rect(
+    let transparentBackground = new Graphics().rect(  // Bg to visualize hit area
       -150, -150, 300, 300
     ).fill(0xffff00);
     transparentBackground.alpha = 0.5;
     this.addChild(transparentBackground);
-
     this.addChild(sprite);
     this.hitArea = new Rectangle(-150, -150, 300, 300);
+
+    // Events and listeners
+    this.onDragStarted = new Signal<{ pieceId: number, x: number, y: number }>();
+    this.onDropped = new Signal<{ pieceId: number, x: number, y: number }>();
+
+    // Flags
+    this.dragging = false;
 
     if (this.gameState.getCurrentTurn() === this.color) { // 1st move is W
 
       this.eventMode = 'dynamic';     // enable the piece to be interactive... this will allow it to respond to mouse and touch events - from https://pixijs.com/7.x/examples/events/dragging
     }
 
-    this.id = id;
-
     this.addFieldEvents();
   }
 
-  // possible functions
   private addFieldEvents() {
     this
       .on("pointerdown", this.onDragStart, this)
@@ -82,6 +87,12 @@ export class Piece extends Container {
     // The Board class only defines layout positions via the FEN parser — it does not own or contain the piece instances.
     // (later make board container and handle that)
     const stage = this.parent;
+
+    this.onDragStarted.fire({
+      pieceId: this.id,
+      x: this.x,
+      y: this.y
+    });
 
     console.log('xxx stage', stage);
 

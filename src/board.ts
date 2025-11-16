@@ -12,12 +12,14 @@ export class Board {
     private fields!: Field[][];
     private config = boardConfig;
     private gameState !: GameState;
+    private currentDraggOriginField: Field | null = null;
 
     constructor() {
 
         this.fields = [];
         this.board = this.generateBoard();
         this.gameState = GameState.getInstance();
+        this.currentDraggOriginField = null;
     }
 
     private generateBoard(): Container {
@@ -82,9 +84,14 @@ export class Board {
         // Attach listeners to all pieces
         for (const row of fenPieceBoard) {
             for (const piece of row) {
-                // const piece = field.getOccupiedBy();
 
                 if (piece === null) continue;
+
+                piece.onDragStarted.add(
+                    new Listener<{ pieceId: number; x: number; y: number }>(
+                        payload => this.handlePieceDragStarted(payload)
+                    )
+                );
 
                 piece.onDropped.add(
                     new Listener<{ pieceId: number; x: number; y: number }>(
@@ -109,11 +116,23 @@ export class Board {
         return pieceBoard;
     }
 
+    private handlePieceDragStarted({ pieceId, x, y }: { pieceId: number; x: number; y: number }): void {
+        console.log(`handlePieceDragStarted id  ${pieceId}  x ${x} y ${y}`);
 
-    private handlePieceDrop({ pieceId, x, y }: { pieceId: number; x: number; y: number }) {
+        const originField = this.findNearestField(x, y);
+        this.currentDraggOriginField = originField;
+        console.log(`handlePieceDragStarted originField ${originField?.getNotation()}`);
+
+    }
+
+    private handlePieceDrop({ pieceId, x, y }: { pieceId: number; x: number; y: number }): void {
 
         const nearest = this.findNearestField(x, y);
-        if (!nearest) return;
+
+        if (!nearest) {
+            this.currentDraggOriginField = null;
+            return;
+        };
 
         console.log(`Piece with id ${pieceId} snaps to field ${nearest.getNotation()}`);
         if (nearest.getOccupiedBy() === null || nearest.getOccupiedBy()?.getId() === pieceId) { // so if there is no piece or piece lands where started
@@ -141,10 +160,14 @@ export class Board {
 
         }
 
+        if (nearest === this.currentDraggOriginField) {
+            this.currentDraggOriginField = null;
+            return;
+        };
         this.gameState.incrementMoveCount();
         this.gameState.setNextTurn();
-        console.log(this.gameState.getCurrentTurn());
-        console.log(this.gameState.getMoveCount());
+        console.log('xxx this.gameState.getCurrentTurn()', this.gameState.getCurrentTurn());
+        console.log('xxx this.gameState.getMoveCount()', this.gameState.getMoveCount());
 
         // handle interactivness for board
         // this.updatePieceBoard(piece, nearest);
