@@ -3,6 +3,7 @@
 import { Application } from 'pixi.js';
 import { FenParser } from './fenParser';
 import { Board } from './board';
+import { GameState } from './gameState';
 
 type GameInitData = {
     app: Application,
@@ -16,6 +17,7 @@ export class Game {
     private app!: Application;
     private fenParser!: FenParser;
     private gameBoard!: Board;
+    private gameState!: GameState;
 
     private constructor() {
         this.initialized = false;
@@ -44,6 +46,7 @@ export class Game {
         
         // setup managers
         this.app = gameInitData.app;
+        this.gameState = GameState.getInstance();
 
         console.log('this.app', this.app);
 

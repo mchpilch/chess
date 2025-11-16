@@ -1,5 +1,6 @@
 import { Assets, Container, Sprite, FederatedPointerEvent, Graphics, Rectangle } from "pixi.js";
 import { Signal } from "./signal";
+import { GameState } from "./gameState";
 
 export class Piece extends Container {
 
@@ -11,10 +12,12 @@ export class Piece extends Container {
   private color: "w" | "b";
   private role: 'r' | 'n' | 'b' | 'q' | 'k' | 'p';
   private key: string;
+  private gameState!: GameState;
 
   constructor(type: string, color: "w" | "b", id: number) {
     super();
 
+    this.gameState = GameState.getInstance();
     this.color = color;
     this.role = type.toLocaleLowerCase() as 'r' | 'n' | 'b' | 'q' | 'k' | 'p'; // improve later 
     const key = `${type}-${color}`;
@@ -36,7 +39,11 @@ export class Piece extends Container {
 
     this.piece.addChild(sprite);
     this.piece.hitArea = new Rectangle(-150, -150, 300, 300);
-    this.piece.eventMode = 'static';     // enable the piece to be interactive... this will allow it to respond to mouse and touch events - from https://pixijs.com/7.x/examples/events/dragging
+
+    if (this.gameState.getCurrentTurn() === this.color) { // 1st move is W
+
+      this.piece.eventMode = 'dynamic';     // enable the piece to be interactive... this will allow it to respond to mouse and touch events - from https://pixijs.com/7.x/examples/events/dragging
+    }
 
     this.addChild(this.piece);
 
@@ -64,6 +71,7 @@ export class Piece extends Container {
   }
 
   private onDragStart(e: FederatedPointerEvent) {
+
     this.dragging = true;
     this.alpha = 0.7;
 
@@ -96,6 +104,7 @@ export class Piece extends Container {
       parentPos.x,// + this.dragOffset.x,
       parentPos.y,// + this.dragOffset.y
     );
+
   }
 
   private onDragEnd(e: FederatedPointerEvent) {
@@ -118,14 +127,14 @@ export class Piece extends Container {
   public getId(): number {
     return this.id;
   }
-  public getPieceColor(): string {
+  public getColor(): string {
     return this.color;
   }
-  public getPieceRole(): string {
+  public getRole(): string {
     return this.role;
   }
 
-  public getPieceKey(): string {
+  public getKey(): string {
     return this.key;
   }
 

@@ -3,6 +3,7 @@ import { boardConfig } from "./boardConfig";
 import { Piece } from "./piece";
 import { Field } from "./field";
 import { Listener } from "./listener";
+import { GameState } from "./gameState";
 
 
 export class Board {
@@ -11,11 +12,13 @@ export class Board {
     private pieceBoard!: (Piece | null)[][];
     private fields!: Field[][];
     private config = boardConfig;
+    private gameState !: GameState;
 
     constructor() {
 
         this.fields = [];
         this.board = this.generateBoard();
+        this.gameState = GameState.getInstance();
     }
 
     private generateBoard(): Container {
@@ -135,10 +138,10 @@ export class Board {
         } else {// another piece is already here
             // more logic will be here
             console.log(`Field is already occupied by:
-                 color  ${nearest.getOccupiedBy()?.getPieceColor()}
-                 role   ${nearest.getOccupiedBy()?.getPieceRole()}
+                 color  ${nearest.getOccupiedBy()?.getColor()}
+                 role   ${nearest.getOccupiedBy()?.getRole()}
                  id     ${nearest.getOccupiedBy()?.getId()}
-                 key    ${nearest.getOccupiedBy()?.getPieceKey()}
+                 key    ${nearest.getOccupiedBy()?.getKey()}
             `);
 
             nearest.getOccupiedBy()!.visible = false;
@@ -152,20 +155,29 @@ export class Board {
                 nearest.getPosition().x + this.config.squareWidth / 2, // cause anchor of square is not in the middle
                 nearest.getPosition().y + this.config.squareWidth / 2
             );
+       
         }
+
+        this.gameState.incrementMoveCount();
+        this.gameState.setNextTurn();
+        console.log(this.gameState.getCurrentTurn());
+        console.log(this.gameState.getMoveCount());
+
+        // handle interactivness for board
+        this.handleInteractivnessOfPiecesOnBoard();
 
         console.log('xxx pieceBoard', this.pieceBoard);
     }
 
-    private handlePieceMove({ pieceId, x, y }: { pieceId: number; x: number; y: number }) {
+    // private handlePieceMove({ pieceId, x, y }: { pieceId: number; x: number; y: number }) {
 
-        const nearest = this.findNearestField(x, y);
-        if (!nearest) return;
+    //     const nearest = this.findNearestField(x, y);
+    //     if (!nearest) return;
 
-        console.log(
-            `Piece ${pieceId} snaps to field ${nearest.getNotation()} at (${nearest.getPosition().x}, ${nearest.getPosition().y})`
-        );
-    }
+    //     console.log(
+    //         `Piece ${pieceId} snaps to field ${nearest.getNotation()} at (${nearest.getPosition().x}, ${nearest.getPosition().y})`
+    //     );
+    // }
 
     private findNearestField(px: number, py: number): Field | null {
         let nearest: Field | null = null;
@@ -196,6 +208,26 @@ export class Board {
         return null;
     }
 
+    private handleInteractivnessOfPiecesOnBoard(): void {
+
+        for (const row of this.pieceBoard) {
+            for (const piece of row) {
+                if (piece) {
+                    if (this.gameState.getCurrentTurn() === piece.getColor()) {
+
+                        piece.display.eventMode = 'dynamic';
+                        console.log(`xxx piece ${piece.getKey()} is dynamic`);
+
+                    } else {
+                        piece.display.eventMode = 'none';
+                        console.log(`xxx piece ${piece.getKey()} is none`);
+                    }
+                }
+            }
+        }
+        console.log('xxx handleInteractivnessOfPiecesOnBoard');
+
+    }
     public getFields(): Field[][] { return this.fields; }
 
 }
