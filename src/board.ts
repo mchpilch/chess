@@ -12,14 +12,16 @@ export class Board {
     private fields!: Field[][];
     private config = boardConfig;
     private gameState !: GameState;
-    private currentDraggOriginField: Field | null = null;
+    private dragOriginField: Field | null = null;
+    private dragFinalField: Field | null = null;
 
     constructor() {
 
         this.fields = [];
         this.board = this.generateBoard();
         this.gameState = GameState.getInstance();
-        this.currentDraggOriginField = null;
+        this.dragOriginField = null;
+        this.dragFinalField = null;
     }
 
     private generateBoard(): Container {
@@ -120,7 +122,7 @@ export class Board {
         console.log(`handlePieceDragStarted id  ${pieceId}  x ${x} y ${y}`);
 
         const originField = this.findNearestField(x, y);
-        this.currentDraggOriginField = originField;
+        this.dragOriginField = originField;
         console.log(`handlePieceDragStarted originField ${originField?.getNotation()}`);
 
     }
@@ -130,7 +132,8 @@ export class Board {
         const nearest = this.findNearestField(x, y);
 
         if (!nearest) {
-            this.currentDraggOriginField = null;
+            this.dragOriginField = null;
+            this.dragFinalField = null;
             return;
         };
 
@@ -139,16 +142,16 @@ export class Board {
             nearest.setOccupiedBy(this.findPieceById(pieceId));
         } else {// another piece is already here
             // more logic will be here
-            console.log(`Field is already occupied by:
+            console.log(`xxxx Field is already occupied by:
                  color  ${nearest.getOccupiedBy()?.getColor()}
                  role   ${nearest.getOccupiedBy()?.getRole()}
                  id     ${nearest.getOccupiedBy()?.getId()}
                  key    ${nearest.getOccupiedBy()?.getKey()}
             `);
 
-            nearest.getOccupiedBy()!.visible = false;
+            nearest.getOccupiedBy()!.visible = false; // later: consider if this is enough or should it be rm from stage completely
+            nearest.setOccupiedBy(this.findPieceById(pieceId));
         }
-
 
         // Move the actual piece
         const piece = this.findPieceById(pieceId);
@@ -160,8 +163,10 @@ export class Board {
 
         }
 
-        if (nearest === this.currentDraggOriginField) {
-            this.currentDraggOriginField = null;
+        this.dragFinalField = nearest;
+        if (nearest === this.dragOriginField) {
+            this.dragOriginField = null;
+            this.dragFinalField = null;
             return;
         };
         this.gameState.incrementMoveCount();
@@ -169,13 +174,12 @@ export class Board {
         console.log('xxx this.gameState.getCurrentTurn()', this.gameState.getCurrentTurn());
         console.log('xxx this.gameState.getMoveCount()', this.gameState.getMoveCount());
 
-        // handle interactivness for board
-        // this.updatePieceBoard(piece, nearest);
-        this.updateFields();
+        this.dragOriginField?.setOccupiedBy(null);
 
         this.handleInteractivnessOfPiecesOnBoard();
 
-        console.log('xxx getFields', this.getFields());
+        this.dragOriginField = null;
+        this.dragFinalField = null;
     }
 
     private findNearestField(px: number, py: number): Field | null {
@@ -207,17 +211,6 @@ export class Board {
         }
         return null;
     }
-
-    private updateFields(): void {
-
-        for (const row of this.fields) {
-            for (const field of row) {
-
-
-            }
-        }
-    }
-
 
     private handleInteractivnessOfPiecesOnBoard(): void {
 
