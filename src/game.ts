@@ -16,7 +16,7 @@ export class Game {
 
     private app!: Application;
     private fenParser!: FenParser;
-    private gameBoard!: Board;
+    private board!: Board;
     private gameState!: GameState;
 
     private constructor() {
@@ -37,6 +37,7 @@ export class Game {
             console.warn('Game is already initialized. Ignoring duplicate init call.');
             return;
         }
+        this.gameState = GameState.getInstance();
         this.initialized = true;
         // this.fenParser = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
         // this.fenParser = new FenParser('r1bk3r/p2pBpNp/n4n2/1p1NP2P/6P1/3P4/P1P1K3/q5b1 w KQkq - 0 1');
@@ -50,13 +51,12 @@ export class Game {
 
         console.log('this.app', this.app);
 
-        this.gameBoard = new Board();
+        this.board = new Board();
         this.app.stage.interactive = true;
 
-        let pieceBoard = this.fenParser.getBoard();
-        console.log('pieceBoard', pieceBoard);
-        this.gameBoard.setPieceBoard(pieceBoard);
-        this.app.stage.addChild(this.gameBoard.getBoard());
+        let fenPieceBoard = this.fenParser.getBoard();
+        this.board.updateFieldsWithFenParserResult(fenPieceBoard);
+        this.app.stage.addChild(this.board.getBoard());
 
         const offsetX = 1250;
         const offsetY = 750;
@@ -64,22 +64,13 @@ export class Game {
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
 
-                if (pieceBoard[i][j] !== null) {
-                    pieceBoard[i][j]!.position.set(offsetX + j * 300 + 150, offsetY + i * 300 + 150);
-                    this.gameBoard.getFields()[i][j].setOccupiedBy((pieceBoard[i][j]));
-                    this.app.stage.addChild(pieceBoard[i][j]!);
+                if (fenPieceBoard[i][j] !== null) {
+                    fenPieceBoard[i][j]!.position.set(offsetX + j * 300 + 150, offsetY + i * 300 + 150);
+                    this.board.getFields()[i][j].setOccupiedBy((fenPieceBoard[i][j]));
+                    this.app.stage.addChild(fenPieceBoard[i][j]!);
                 }
 
             }
         }
-
-        // gameBoard.updateOccupationOfFieds();
     }
 }
-
-
-// this.app.stage.on('pointermove', e => {
-//     const pos = e.global;
-//     const boardLocal = this.gameBoard.getBoard().toLocal(pos);
-//     // console.log('pppp board-local:', boardLocal.x, boardLocal.y);
-// });

@@ -28,12 +28,6 @@ export class FenParser {
         this.parse(fenPosition);
     }
 
-    // public getBoard(): Board { // this was buggy - the same object refference filled the whole board -> only one pawn was on screen
-
-    //     this.board = new Array(8).fill(new Array(8).fill(new Pawn('w')));
-    //     return this.board;
-    // }
-
     public getBoard(): Board {
 
         return this.board;
@@ -58,7 +52,6 @@ export class FenParser {
     }
 
     private parseBoard(notation: string): Board {
-        console.log("xxxx  parseBoard")
         let board: Board = [];
 
         for (let i = 0; i < 8; i++) {
@@ -135,60 +128,3 @@ export class FenParser {
         return fenActiveColor === 'w' ? 'w' : 'b';
     }
 }
-
-
-// https://www.typescriptlang.org/play/?#code/GYVwdgxgLglg9mABABwIYCcDOBTAQnDAEwAow4pVYEAuRTKdGMAcwEpaA3OGQxAbwBQiYYgA22KIhiIAvIgAMAbgFCR4yQFtUADwCSUbOkrwwmWYgCM864sQB6O3VTAJATzEwNMKKuHqpBkZUpuZKKiKIEAiYcOIAdKJwzMQA5NrpiGQUwQnYLFAAFikANJnkxgi5+QWsvogA7gUw4ojE0gA8ZdkmVcyFrPzhESLehhWmANQTysMjwK2jQSZmAHyIWnqB45gDgrOzUaax2HH1GGDEAES46NioANZMzGJwcMi0UK-rqGDui9sAQkurBm+wiACNbg9QbMAL5DWYweakcrBADaMAAurIZHIUnYUrs6mCYFMYWDIghYGAQNhyRF4cS5q0suMMdjcXjUITBhSRIcYvFEskUqhEAgpGBCNh7pgSlIQUzEWSlcNDtTafSRPCSciYJgAHKoA3EA0gDTgwwo7oIdmsAacxDAVCiHC7eyOGIBKRmMU0i2GRCFPKqiIC44JJKpf2W9DipBMaWy+UwRV84ThoVRlIGJAxwOfeVmgPoa1srH25ShkaICZyYuxsvoitV9OUo5ZkXpbRSFO1VU67UqRkCByIAAq2HoAjQWDwBHQJFFACZuYqVEA// function parseBoard(notation: string): void {
-//     let i = 0;
-
-//     let maxIterations = 1000; // safety limit
-//     let iterations = 0;
-
-//     console.log('xxx notation.length', notation.length)
-//     while (i < notation.length) {
-
-//         iterations++;
-//         if (iterations > maxIterations) {
-//             console.warn("Breaking loop: too many iterations!");
-//             break;
-//         }
-
-//         if (notation[i] === '/') {
-//             i++;
-//             continue;
-//         }
-
-//         if (notation[i] === 'a') {
-//             console.log('a on indeks', i);
-//             i++;
-//             continue;
-//         }
-//         if (isNaN(Number(notation[i])) === false) { // so it is a number then
-//             console.log('number on indeks', i);
-//             console.log('ten number to', Number(notation[i]));
-
-//             i += Number(notation[i]);
-
-//             console.log('xxx i', i)
-
-//         }
-//     }
-
-// }
-
-
-// // Test // this code while rewaches 2 then skips the next 2 chards from string so it should do this for board so i will introduce index for board and index for while iterator
-// parseBoard('a2a');
-// SO TWO INDEXES TO DO NEXT PROGRAMING SESSION
-
-
-
-// en passant ideas
-// rnbqkbnr/ppp1pppp/8/8/4P3/8/PPP2PPP/RNBQKBNR b KQkq - 0 3 - no en passant casue it is only just after the pwan moved two squres
-// rnbqkbnr/ppp1pppp/8/3p4/4P3/3P4/PPP2PPP/RNBQKBNR b KQkq - 0 2 - no en passant casue it is only just after the pwan moved two squres
-// rnbqkbnr/ppp2ppp/8/3p4/PP1Pp2P/8/2P1PPP1/RNBQKBNR b KQkq d3 0 4
-// rnbqkbnr/ppp4p/8/3p1pp1/PP1PpPPP/8/2P1P3/RNBQKBNR b KQkq g3 0 6
-
-// En passant can only be captured on the very next move after the pawn advances two squares. So only one possible, not even two per color. Just one. Good easier to handle.
-
-// // chess.com and lichess are using dom elemts not canvas ? - > https://svelte.dev/
-// GITHUB project out of this actually not just repo?

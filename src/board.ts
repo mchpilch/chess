@@ -9,7 +9,6 @@ import { GameState } from "./gameState";
 export class Board {
 
     private board!: Container;
-    private pieceBoard!: (Piece | null)[][];
     private fields!: Field[][];
     private config = boardConfig;
     private gameState !: GameState;
@@ -78,31 +77,38 @@ export class Board {
 
     public getBoard(): Container { return this.board; }
 
-    // PieceBoard is a datastructure to hold pieces (sprites) in arr[][]
-    public setPieceBoard(pieceBoard: (Piece | null)[][]) {
-        this.pieceBoard = pieceBoard;
+    public updateFieldsWithFenParserResult(fenPieceBoard: (Piece | null)[][]) {
 
         // Attach listeners to all pieces
-        for (const row of pieceBoard) {
+        for (const row of fenPieceBoard) {
             for (const piece of row) {
-                if (!piece) continue;
+                // const piece = field.getOccupiedBy();
+
+                if (piece === null) continue;
 
                 piece.onDropped.add(
                     new Listener<{ pieceId: number; x: number; y: number }>(
                         payload => this.handlePieceDrop(payload)
                     )
                 );
-
-                console.log('xxx pieceBoard', pieceBoard);
             }
         }
 
     }
 
-    public getPieceBoard(): (Piece | null)[][] {
+    public getPiecesFromFields(): (Piece | null)[][] {
+        const pieceBoard: (Piece | null)[][] = [];
 
-        return this.pieceBoard;
+        for (const row of this.fields) {
+            const pieceRow: (Piece | null)[] = [];
+            for (const field of row) {
+                pieceRow.push(field.getOccupiedBy());
+            }
+            pieceBoard.push(pieceRow);
+        }
+        return pieceBoard;
     }
+
 
     private handlePieceDrop({ pieceId, x, y }: { pieceId: number; x: number; y: number }) {
 
@@ -141,11 +147,11 @@ export class Board {
         console.log(this.gameState.getMoveCount());
 
         // handle interactivness for board
-        this.updatePieceBoard(piece, nearest);
+        // this.updatePieceBoard(piece, nearest);
         this.updateFields();
+
         this.handleInteractivnessOfPiecesOnBoard();
 
-        console.log('xxx pieceBoard', this.pieceBoard);
         console.log('xxx getFields', this.getFields());
     }
 
@@ -170,13 +176,15 @@ export class Board {
     }
 
     private findPieceById(id: number): Piece | null {
-        for (const row of this.pieceBoard) {
-            for (const piece of row) {
+        for (const row of this.fields) {
+            for (const field of row) {
+                const piece = field.getOccupiedBy();
                 if (piece && piece.getId() === id) return piece;
             }
         }
         return null;
     }
+
     private updateFields(): void {
 
         for (const row of this.fields) {
@@ -190,24 +198,22 @@ export class Board {
 
     private handleInteractivnessOfPiecesOnBoard(): void {
 
-        for (const row of this.pieceBoard) {
-            for (const piece of row) {
-                if (piece) {
-                    if (this.gameState.getCurrentTurn() === piece.getColor()) {
+        for (const row of this.fields) {
+            for (const field of row) {
 
-                        piece.eventMode = 'dynamic';
-                        console.log(`xxx piece ${piece.getKey()} is dynamic`);
+                const piece = field.getOccupiedBy();
+                if (piece === null) continue;
 
-                    } else {
-                        piece.eventMode = 'none';
-                        console.log(`xxx piece ${piece.getKey()} is none`);
-                    }
+                if (this.gameState.getCurrentTurn() === piece.getColor()) {
+                    piece.eventMode = 'dynamic';
+                } else {
+                    piece.eventMode = 'none';
                 }
+
             }
         }
-        console.log('xxx handleInteractivnessOfPiecesOnBoard');
-
     }
+
     public getFields(): Field[][] { return this.fields; }
 
 }
