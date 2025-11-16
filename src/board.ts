@@ -130,7 +130,7 @@ export class Board {
         if (!nearest) return;
 
         console.log(`Piece with id ${pieceId} snaps to field ${nearest.getNotation()}`);
-        if (nearest.getOccupiedBy() === null) {
+        if (nearest.getOccupiedBy() === null || nearest.getOccupiedBy()?.getId() === pieceId) { // so if there is no piece or piece lands where started
             nearest.setOccupiedBy(this.findPieceById(pieceId));
         } else {// another piece is already here
             // more logic will be here
