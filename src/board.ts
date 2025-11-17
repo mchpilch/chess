@@ -13,7 +13,6 @@ export class Board {
     private config = boardConfig;
     private gameState !: GameState;
     private dragOriginField: Field | null = null;
-    private dragFinalField: Field | null = null;
 
     constructor() {
 
@@ -21,7 +20,6 @@ export class Board {
         this.board = this.generateBoard();
         this.gameState = GameState.getInstance();
         this.dragOriginField = null;
-        this.dragFinalField = null;
     }
 
     private generateBoard(): Container {
@@ -133,53 +131,47 @@ export class Board {
 
         if (!nearest) {
             this.dragOriginField = null;
-            this.dragFinalField = null;
             return;
         };
+        console.log(`xxxxx Piece with id ${pieceId} snaps to field ${nearest.getNotation()}`);
+        console.log(`xxxxx nearest.getOccupiedBy()?.getColor() ${nearest.getOccupiedBy()?.getColor()}`);
+        console.log(`xxxxx this.gameState.getCurrentTurn() ${this.gameState.getCurrentTurn()}`);
+        console.log(`xxxxx nearest.getOccupiedBy()?.getColor() === this.gameState.getCurrentTurn() ${nearest.getOccupiedBy()?.getColor() === this.gameState.getCurrentTurn()}`);
 
-        console.log(`Piece with id ${pieceId} snaps to field ${nearest.getNotation()}`);
-        if (nearest.getOccupiedBy() === null || nearest.getOccupiedBy()?.getId() === pieceId) { // so if there is no piece or piece lands where started
-            nearest.setOccupiedBy(this.findPieceById(pieceId));
-        } else {// another piece is already here
-            // more logic will be here
-            console.log(`xxxx Field is already occupied by:
-                 color  ${nearest.getOccupiedBy()?.getColor()}
-                 role   ${nearest.getOccupiedBy()?.getRole()}
-                 id     ${nearest.getOccupiedBy()?.getId()}
-                 key    ${nearest.getOccupiedBy()?.getKey()}
-            `);
+        let isMoveToStartingSquare = nearest.getOccupiedBy()?.getId() === pieceId;
+        let isMoveToWrongColor = nearest.getOccupiedBy() !== null && nearest.getOccupiedBy()?.getColor() === this.gameState.getCurrentTurn();
+        let isMoveToEmptySquare = nearest.getOccupiedBy() === null;
+        let isMoveToEnemySquare = nearest.getOccupiedBy() !== null && nearest.getOccupiedBy()?.getColor() !== this.gameState.getCurrentTurn();
 
-            nearest.getOccupiedBy()!.visible = false; // later: consider if this is enough or should it be rm from stage completely
-            nearest.setOccupiedBy(this.findPieceById(pieceId));
-        }
-
-        // Move the actual piece
-        const piece = this.findPieceById(pieceId);
-        if (piece) {
-            piece.position.set(
-                nearest.getPosition().x + this.config.squareWidth / 2, // cause anchor of square is not in the middle
-                nearest.getPosition().y + this.config.squareWidth / 2
-            );
-
-        }
-
-        this.dragFinalField = nearest;
-        if (nearest === this.dragOriginField) {
+        if (isMoveToStartingSquare === true || isMoveToWrongColor === true) {
+            if (this.dragOriginField === null) return;
+            this.movePiece(pieceId, this.dragOriginField);
             this.dragOriginField = null;
-            this.dragFinalField = null;
             return;
-        };
+        }
+
+        if (isMoveToEmptySquare === true) {
+            this.movePiece(pieceId, nearest);
+            nearest.setOccupiedBy(this.findPieceById(pieceId));
+        }
+
+        if (isMoveToEnemySquare === true) { // here more rules will be added
+            nearest.getOccupiedBy()!.visible = false; // later: consider if this is enough or should it be rm from stage completely
+            this.movePiece(pieceId, nearest);
+            nearest.setOccupiedBy(this.findPieceById(pieceId));
+        }
+
         this.gameState.incrementMoveCount();
         this.gameState.setNextTurn();
-        console.log('xxx this.gameState.getCurrentTurn()', this.gameState.getCurrentTurn());
-        console.log('xxx this.gameState.getMoveCount()', this.gameState.getMoveCount());
+
 
         this.dragOriginField?.setOccupiedBy(null);
 
         this.handleInteractivnessOfPiecesOnBoard();
-
         this.dragOriginField = null;
-        this.dragFinalField = null;
+
+        console.log('xxx this.gameState.getCurrentTurn()', this.gameState.getCurrentTurn());
+        console.log('xxx this.gameState.getMoveCount()', this.gameState.getMoveCount());
     }
 
     private findNearestField(px: number, py: number): Field | null {
@@ -212,6 +204,17 @@ export class Board {
         return null;
     }
 
+    private movePiece(pieceId: number, destination: Field): void { // set dragged piece in new position
+        // Move the actual piece
+        const piece = this.findPieceById(pieceId);
+        if (piece) {
+            piece.position.set(
+                destination.getPosition().x + this.config.squareWidth / 2, // cause anchor of square is not in the middle
+                destination.getPosition().y + this.config.squareWidth / 2
+            );
+
+        }
+    }
     private handleInteractivnessOfPiecesOnBoard(): void {
 
         for (const row of this.fields) {
