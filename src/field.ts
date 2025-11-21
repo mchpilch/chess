@@ -46,4 +46,8 @@ export class Field {
     public getGraphics() {
         return this.graphics;
     }
+
+    public getId() {
+        return this.id;
+    }
 }

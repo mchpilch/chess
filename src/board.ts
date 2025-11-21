@@ -27,12 +27,13 @@ export class Board {
         const boardContainer = new Container;
 
         for (let r = 0; r < this.config.numberOfRows; r++) {
+
             let row = [];
             for (let f = 0; f < this.config.numberOfFiles; f++) {
 
-                const id = r * this.config.numberOfRows + f;
-                const notation = `${String.fromCharCode(97 + f)}${this.config.numberOfRows - r}`; // a1..h8 // 97 is a lowercase "a" // files got letters while rows have numbers
+                const id = this.config.numberOfRows * (this.config.numberOfRows - r - 1) + f; // improved id calc so a1 corresponds to 0 a2 to 1 and so on
 
+                const notation = `${String.fromCharCode(97 + f)}${this.config.numberOfRows - r}`; // a1..h8 // 97 is a lowercase "a" // files got letters while rows have numbers
                 const x = this.config.offset.x + f * this.config.squareWidth; //  - this.config.squareWidth / 2 is necessary as pieces are anchored in the middle of spites 
                 const y = this.config.offset.y + r * this.config.squareWidth; // 
 
@@ -123,6 +124,8 @@ export class Board {
         this.dragOriginField = originField;
         console.log(`handlePieceDragStarted originField ${originField?.getNotation()}`);
 
+        this.calculatePossibleMoves(pieceId, originField);
+        // then show possible moves;
     }
 
     private handlePieceDrop({ pieceId, x, y }: { pieceId: number; x: number; y: number }): void {
@@ -133,10 +136,10 @@ export class Board {
             this.dragOriginField = null;
             return;
         };
-        console.log(`xxxxx Piece with id ${pieceId} snaps to field ${nearest.getNotation()}`);
-        console.log(`xxxxx nearest.getOccupiedBy()?.getColor() ${nearest.getOccupiedBy()?.getColor()}`);
-        console.log(`xxxxx this.gameState.getCurrentTurn() ${this.gameState.getCurrentTurn()}`);
-        console.log(`xxxxx nearest.getOccupiedBy()?.getColor() === this.gameState.getCurrentTurn() ${nearest.getOccupiedBy()?.getColor() === this.gameState.getCurrentTurn()}`);
+        // console.log(`xxxxx Piece with id ${pieceId} snaps to field ${nearest.getNotation()}`);
+        // console.log(`xxxxx nearest.getOccupiedBy()?.getColor() ${nearest.getOccupiedBy()?.getColor()}`);
+        // console.log(`xxxxx this.gameState.getCurrentTurn() ${this.gameState.getCurrentTurn()}`);
+        // console.log(`xxxxx nearest.getOccupiedBy()?.getColor() === this.gameState.getCurrentTurn() ${nearest.getOccupiedBy()?.getColor() === this.gameState.getCurrentTurn()}`);
 
         let isMoveToStartingSquare = nearest.getOccupiedBy()?.getId() === pieceId;
         let isMoveToWrongColor = nearest.getOccupiedBy() !== null && nearest.getOccupiedBy()?.getColor() === this.gameState.getCurrentTurn();
@@ -170,8 +173,8 @@ export class Board {
         this.handleInteractivnessOfPiecesOnBoard();
         this.dragOriginField = null;
 
-        console.log('xxx this.gameState.getCurrentTurn()', this.gameState.getCurrentTurn());
-        console.log('xxx this.gameState.getMoveCount()', this.gameState.getMoveCount());
+        // console.log('xxx this.gameState.getCurrentTurn()', this.gameState.getCurrentTurn());
+        // console.log('xxx this.gameState.getMoveCount()', this.gameState.getMoveCount());
     }
 
     private findNearestField(px: number, py: number): Field | null {
@@ -204,6 +207,40 @@ export class Board {
         return null;
     }
 
+    private calculatePossibleMoves(pieceId: number, originField: Field | null): void {
+        let piece = this.findPieceById(pieceId);
+        console.log('xxx piece', piece?.getRole(), piece?.getColor());
+        console.log('xxx originField', originField?.getNotation(), originField?.getId());
+        let possibleMoves: Field[] = [];
+        let tempPossibleMovesAsNotation: string[] = [];
+        switch (piece?.getRole()) {
+            case 'rook':
+                tempPossibleMovesAsNotation = this.calculatePossibleMovesForRook(pieceId, originField);
+                break;
+            // case 'n':
+            //     this.possibleMoves = this.calculatePossibleMovesForKnight(pieceId, originField);
+            //     break;
+            // case 'b':
+            //     this.possibleMoves = this.calculatePossibleMovesForBishop(pieceId, originField);
+            //     break;
+            // case 'q':
+            //     this.possibleMoves = this.calculatePossibleMovesForQueen(pieceId, originField);
+            //     break;
+            // case 'k':
+            //     this.possibleMoves = this.calculatePossibleMovesForKing(pieceId, originField);
+            //     break;
+            // case 'p':
+            //     this.possibleMoves = this.calculatePossibleMovesForPawn(pieceId, originField);
+            //     break;
+            default:
+                tempPossibleMovesAsNotation = [];
+        }
+    }
+
+    private calculatePossibleMovesForRook() : string[] {
+
+    }
+    
     private movePiece(pieceId: number, destination: Field): void { // set dragged piece in new position
         // Move the actual piece
         const piece = this.findPieceById(pieceId);
@@ -215,6 +252,7 @@ export class Board {
 
         }
     }
+
     private handleInteractivnessOfPiecesOnBoard(): void {
 
         for (const row of this.fields) {

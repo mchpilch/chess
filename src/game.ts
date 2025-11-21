@@ -49,7 +49,7 @@ export class Game {
         this.app = gameInitData.app;
         this.gameState = GameState.getInstance();
 
-        console.log('this.app', this.app);
+        // console.log('this.app', this.app);
 
         this.board = new Board();
         this.app.stage.interactive = true;
