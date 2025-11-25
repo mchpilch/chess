@@ -2,6 +2,7 @@ import { Assets, Container, Sprite, FederatedPointerEvent, Graphics, Rectangle }
 import { Signal } from "./signal";
 import { GameState } from "./gameState";
 import { pieceConfig } from "./Pieces/pieceConfig";
+import { boardConfig } from "./boardConfig";
 
 export class Piece extends Container {
 
@@ -14,6 +15,7 @@ export class Piece extends Container {
   private key!: string;
   private gameState!: GameState;
   private config !: typeof pieceConfig;
+  private boardConfig !: typeof boardConfig;
 
   constructor(type: string, color: "w" | "b", id: number) {
 
@@ -27,6 +29,7 @@ export class Piece extends Container {
     // Managers
     this.gameState = GameState.getInstance();
     this.config = pieceConfig;
+    this.boardConfig = boardConfig;
     // Atributers
     this.id = id;
     this.color = color;
@@ -36,16 +39,16 @@ export class Piece extends Container {
 
     const texture = Assets.get(key);
     const sprite = new Sprite(texture); // in future can be spine or movieclip if i want my pieces animated
-    sprite.anchor.set(0.5);
-    sprite.scale.set(2);
+    sprite.anchor.set(this.config.pieceAnchor);
+    sprite.scale.set(this.config.pieceScale); // 2 - 300, 1 - 150, 0.5  - 75
 
     let transparentBackground = new Graphics().rect(  // Bg to visualize hit area
-      -150, -150, 300, 300
+      -this.boardConfig.squareWidth/2, -this.boardConfig.squareWidth/2, this.boardConfig.squareWidth, this.boardConfig.squareWidth
     ).fill(this.config.pieceHighlightColor);
     transparentBackground.alpha = this.config.pieceBgAlpha;
     this.addChild(transparentBackground);
     this.addChild(sprite);
-    this.hitArea = new Rectangle(-150, -150, 300, 300);
+    this.hitArea = new Rectangle(-this.boardConfig.squareWidth/2, -this.boardConfig.squareWidth/2, this.boardConfig.squareWidth, this.boardConfig.squareWidth);
 
     // Events and listeners
     this.onDragStarted = new Signal<{ pieceId: number, x: number, y: number }>();

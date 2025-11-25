@@ -4,7 +4,7 @@ import { Application } from 'pixi.js';
 import { FenParser } from './fenParser';
 import { Board } from './board';
 import { GameState } from './gameState';
-
+import { boardConfig } from "./boardConfig";
 type GameInitData = {
     app: Application,
 };
@@ -18,6 +18,7 @@ export class Game {
     private fenParser!: FenParser;
     private board!: Board;
     private gameState!: GameState;
+    private boardConfig = boardConfig;
 
     private constructor() {
         this.initialized = false;
@@ -44,7 +45,7 @@ export class Game {
         // this.fenParser = new FenParser('4k2r/6r1/8/8/8/8/3R4/R3K3 w Qk - 0 1');
         // this.fenParser = new FenParser('r7/8/8/8/8/8/8/8 w KQkq i3 0 1'); // only rook
         this.fenParser = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq i3 0 1'); // starting pos
-        
+
         // setup managers
         this.app = gameInitData.app;
         this.gameState = GameState.getInstance();
@@ -58,14 +59,17 @@ export class Game {
         this.board.updateFieldsWithFenParserResult(fenPieceBoard);
         this.app.stage.addChild(this.board.getBoard());
 
-        const offsetX = 1250;
-        const offsetY = 750;
+        const offsetX = boardConfig.offset.x;
+        const offsetY =  boardConfig.offset.y;
 
         for (let i = 0; i < 8; i++) {
             for (let j = 0; j < 8; j++) {
 
                 if (fenPieceBoard[i][j] !== null) {
-                    fenPieceBoard[i][j]!.position.set(offsetX + j * 300 + 150, offsetY + i * 300 + 150);
+                    fenPieceBoard[i][j]!.position.set(
+                        offsetX + j * boardConfig.squareWidth + boardConfig.squareWidth / 2,
+                        offsetY + i * boardConfig.squareWidth + boardConfig.squareWidth / 2
+                    );
                     this.board.getFields()[i][j].setOccupiedBy((fenPieceBoard[i][j]));
                     this.app.stage.addChild(fenPieceBoard[i][j]!);
                 }

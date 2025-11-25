@@ -51,19 +51,19 @@ export class Board {
                 const occupiedBy: Piece | null = null;
                 const position = { x, y };
                 const style = new TextStyle({
-                    fontSize: 48,
+                    fontSize: 12,
                     fill: 0x000000,
                 });
-                const text = new Text({ text: notation, style: style });
-                text.position.set(
-                    x + this.config.textOffset,
-                    y + this.config.textOffset
+                const textNotation = new Text({ text: notation, style: style });
+                textNotation.position.set(
+                    x + this.config.textNotationOffset.x,
+                    y + this.config.textNotationOffset.y
                 );
 
-                const text2 = new Text({ text: id, style: style });
-                text2.position.set(
-                    x + 10,
-                    y + this.config.textOffset
+                const textFieldId = new Text({ text: id, style: style });
+                textFieldId.position.set(
+                    x + this.config.textFieldIdOffset.x,
+                    y + this.config.textFieldIdOffset.y
                 );
                 const field = new Field(
                     id,
@@ -71,14 +71,14 @@ export class Board {
                     occupiedBy,
                     position,
                     square, // graphics
-                    text
+                    textNotation
                 );
 
                 row.push(field);
 
                 boardContainer.addChild(square);
-                // boardContainer.addChild(text); // notation
-                boardContainer.addChild(text2); // ids
+                boardContainer.addChild(textNotation); // notation
+                boardContainer.addChild(textFieldId); // ids
             }
             this.fields.push(row);
         }
