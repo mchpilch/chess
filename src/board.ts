@@ -59,6 +59,12 @@ export class Board {
                     x + this.config.textOffset,
                     y + this.config.textOffset
                 );
+
+                const text2 = new Text({ text: id, style: style });
+                text2.position.set(
+                    x + 10,
+                    y + this.config.textOffset
+                );
                 const field = new Field(
                     id,
                     notation,
@@ -71,7 +77,8 @@ export class Board {
                 row.push(field);
 
                 boardContainer.addChild(square);
-                boardContainer.addChild(text);
+                // boardContainer.addChild(text); // notation
+                boardContainer.addChild(text2); // ids
             }
             this.fields.push(row);
         }
@@ -131,7 +138,7 @@ export class Board {
     private handlePieceDrop({ pieceId, x, y }: { pieceId: number; x: number; y: number }): void {
 
         const nearest = this.findNearestField(x, y);
-
+        this.turnOffHighlights();
         if (!nearest) {
             this.dragOriginField = null;
             return;
@@ -246,20 +253,27 @@ export class Board {
         console.log('xxx currentFile' + currentFile);
         for (let i = 0; i < 8; i++) {
             possibleMoves.push(8 * (currentRow) + i);
-
         }
+        for (let i = 0; i < 8; i++) {
+            possibleMoves.push(currentFile + 8 * i);
+        }
+        console.log('xxx possibleMoves' + possibleMoves);
+        console.log('xxx possibleMoves len' + possibleMoves.length);
         this.highlightFields(possibleMoves);
 
         return [''];
     }
 
     private highlightFields(possibleMoves: number[]): void {
+
         console.log('xxx possibleMoves', possibleMoves);
 
         for (let row of this.fields) {
             for (let field of row) {
-                if (field.getId() in possibleMoves) {
+                if (possibleMoves.includes(field.getId())) {
+
                     let { x, y } = field.getPosition();
+                    console.log('xxx field', field.getNotation());
                     field.getGraphics().clear();
                     field.getGraphics().rect(x, y, this.config.squareWidth, this.config.squareWidth).fill(this.config.colorHighlight);
                 }
@@ -274,6 +288,22 @@ export class Board {
 
 
         // this.fields[0][0].setGraphics.alpha = 0.5;
+    }
+
+    private turnOffHighlights(): void {
+
+        this.fields.forEach((row, rowIndex) => {
+            row.forEach((field, colIndex) => {
+
+                const { x, y } = field.getPosition();
+                // console.log("row:", rowIndex, "col:", colIndex, field.getNotation());
+                const color = (rowIndex + colIndex) % 2 === 0 ? this.config.colorDark : this.config.colorLight;
+                field.getGraphics().clear();
+                field.getGraphics()
+                    .rect(x, y, this.config.squareWidth, this.config.squareWidth)
+                    .fill(color);
+            });
+        });
     }
 
     private movePiece(pieceId: number, destination: Field): void { // set dragged piece in new position
