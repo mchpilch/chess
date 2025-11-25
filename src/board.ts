@@ -215,7 +215,7 @@ export class Board {
         let tempPossibleMovesAsNotation: string[] = [];
         switch (piece?.getRole()) {
             case 'rook':
-                tempPossibleMovesAsNotation = this.calculatePossibleMovesForRook(pieceId, originField);
+                tempPossibleMovesAsNotation = this.calculatePossibleMovesForRook(originField);
                 break;
             // case 'n':
             //     this.possibleMoves = this.calculatePossibleMovesForKnight(pieceId, originField);
@@ -237,10 +237,45 @@ export class Board {
         }
     }
 
-    private calculatePossibleMovesForRook() : string[] {
+    private calculatePossibleMovesForRook(originField: Field): string[] {
+        let originID = originField.getId();
+        let possibleMoves = [];
+        let currentRow = Math.floor(originID / 8);
+        let currentFile = originID % 8;
+        console.log('xxx currentRow' + currentRow);
+        console.log('xxx currentFile' + currentFile);
+        for (let i = 0; i < 8; i++) {
+            possibleMoves.push(8 * (currentRow) + i);
 
+        }
+        this.highlightFields(possibleMoves);
+
+        return [''];
     }
-    
+
+    private highlightFields(possibleMoves: number[]): void {
+        console.log('xxx possibleMoves', possibleMoves);
+
+        for (let row of this.fields) {
+            for (let field of row) {
+                if (field.getId() in possibleMoves) {
+                    let { x, y } = field.getPosition();
+                    field.getGraphics().clear();
+                    field.getGraphics().rect(x, y, this.config.squareWidth, this.config.squareWidth).fill(this.config.colorHighlight);
+                }
+            }
+        }
+        // let { x, y } = this.fields[0][0].getPosition();
+
+        // later: change color without removing it from stage
+        // this.fields[0][0].getGraphics().clear();
+        // this.fields[0][0].getGraphics().fill({ color: this.config.colorHighlight });
+        // this.fields[0][0].getGraphics().rect(x, y, this.config.squareWidth, this.config.squareWidth).fill(this.config.colorHighlight);
+
+
+        // this.fields[0][0].setGraphics.alpha = 0.5;
+    }
+
     private movePiece(pieceId: number, destination: Field): void { // set dragged piece in new position
         // Move the actual piece
         const piece = this.findPieceById(pieceId);

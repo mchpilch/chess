@@ -1,6 +1,7 @@
 import { Assets, Container, Sprite, FederatedPointerEvent, Graphics, Rectangle } from "pixi.js";
 import { Signal } from "./signal";
 import { GameState } from "./gameState";
+import { pieceConfig } from "./Pieces/pieceConfig";
 
 export class Piece extends Container {
 
@@ -12,6 +13,7 @@ export class Piece extends Container {
   private role!: 'r' | 'n' | 'b' | 'q' | 'k' | 'p';
   private key!: string;
   private gameState!: GameState;
+  private config !: typeof pieceConfig;
 
   constructor(type: string, color: "w" | "b", id: number) {
 
@@ -24,7 +26,7 @@ export class Piece extends Container {
 
     // Managers
     this.gameState = GameState.getInstance();
-
+    this.config = pieceConfig;
     // Atributers
     this.id = id;
     this.color = color;
@@ -39,8 +41,8 @@ export class Piece extends Container {
 
     let transparentBackground = new Graphics().rect(  // Bg to visualize hit area
       -150, -150, 300, 300
-    ).fill(0xffff00);
-    transparentBackground.alpha = 0.5;
+    ).fill(this.config.pieceHighlightColor);
+    transparentBackground.alpha = this.config.pieceBgAlpha;
     this.addChild(transparentBackground);
     this.addChild(sprite);
     this.hitArea = new Rectangle(-150, -150, 300, 300);

@@ -14,14 +14,15 @@ export class Field {
         id: number,
         notation: string,
         occupiedBy: (Piece | null),
-        position?: { x: number; y: number },
-        graphics?: Graphics,
+        position: { x: number; y: number },
+        graphics: Graphics,
         text?: Text,
     ) {
 
         this.id = id;
         this.notation = notation;
         this.occupiedBy = occupiedBy;
+        this.graphics = graphics,
         // this.graphics.anchor.set(0.5);
 
         this.position = position ?? { x: 0, y: 0 };
@@ -44,6 +45,10 @@ export class Field {
     }
 
     public getGraphics() {
+        return this.graphics;
+    }
+
+    public setGraphics() {
         return this.graphics;
     }
 
