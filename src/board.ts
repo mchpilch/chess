@@ -130,7 +130,10 @@ export class Board {
         const originField = this.findNearestField(x, y);
         this.dragOriginField = originField;
         console.log(`handlePieceDragStarted originField ${originField?.getNotation()}`);
-
+        if (originField === null) {
+            console.log('originField is null');
+            return;
+        }
         this.calculatePossibleMoves(pieceId, originField);
         // then show possible moves;
     }
@@ -214,7 +217,7 @@ export class Board {
         return null;
     }
 
-    private calculatePossibleMoves(pieceId: number, originField: Field | null): void {
+    private calculatePossibleMoves(pieceId: number, originField: Field): void {
         let piece = this.findPieceById(pieceId);
         console.log('xxx piece', piece?.getRole(), piece?.getColor());
         console.log('xxx originField', originField?.getNotation(), originField?.getId());
@@ -245,22 +248,99 @@ export class Board {
     }
 
     private calculatePossibleMovesForRook(originField: Field): string[] {
-        let originID = originField.getId();
-        let possibleMoves = [];
-        let currentRow = Math.floor(originID / 8);
-        let currentFile = originID % 8;
-        console.log('xxx currentRow' + currentRow);
-        console.log('xxx currentFile' + currentFile);
-        for (let i = 0; i < 8; i++) {
-            possibleMoves.push(8 * (currentRow) + i);
-        }
-        for (let i = 0; i < 8; i++) {
-            possibleMoves.push(currentFile + 8 * i);
-        }
-        console.log('xxx possibleMoves' + possibleMoves);
-        console.log('xxx possibleMoves len' + possibleMoves.length);
-        this.highlightFields(possibleMoves);
 
+        let originID = originField.getId();
+        if (originID === null) {
+            return [];
+        }
+        // let currentRow = Math.floor(originID / 8);
+        // let currentFile = originID % 8;
+
+        let possibleMovesWest: number[] = [];
+        let possibleMovesNorth: number[] = [];
+        let possibleMovesEast: number[] = [];
+        let possibleMovesSouth: number[] = [];
+
+        let possibleCaptures: number[] = [];
+
+        let safetyCounter = 0;
+        let tempFieldID = originID;
+
+        while (tempFieldID % 8 !== 0) {
+            tempFieldID = tempFieldID - 1;
+
+            let possiblePiece = this.getFieldById(tempFieldID).getOccupiedBy()
+            if (possiblePiece !== null) {
+                if (possiblePiece.getColor() === originField.getOccupiedBy()!.getColor()) { // if possible piece is an enemy piece, we can move to that square
+                    console.log('xxx own piece on way');
+
+                    break;
+                } else {
+                    possibleCaptures.push(tempFieldID); // if possible piece is our own piece, we can only move to that square if there are no captures
+                    break;
+                }
+            } else {
+                possibleMovesWest.push(tempFieldID);
+            }
+
+            safetyCounter++;
+            if (safetyCounter > 100) {
+                console.log('SAFETY');
+                break;
+            }
+        }
+
+        tempFieldID = originID;
+        while ((Math.floor(tempFieldID / 8)) !== 7) {
+            tempFieldID = tempFieldID + 8;
+            possibleMovesNorth.push(tempFieldID);
+            if (this.getFieldById(tempFieldID).getOccupiedBy() !== null) {
+                break;
+            }
+            safetyCounter++;
+            if (safetyCounter > 100) {
+                console.log('SAFETY');
+                break;
+            }
+        }
+
+        tempFieldID = originID;
+        while (tempFieldID % 8 !== 7) {
+            console.log('xxx loop')
+            tempFieldID = tempFieldID + 1;
+            possibleMovesEast.push(tempFieldID);
+            if (this.getFieldById(tempFieldID).getOccupiedBy() !== null) {
+                break;
+            }
+            safetyCounter++;
+            if (safetyCounter > 100) {
+                console.log('SAFETY');
+                break;
+            }
+        }
+
+        tempFieldID = originID;
+        while ((Math.floor(tempFieldID / 8)) % 8 !== 0) {
+            tempFieldID = tempFieldID - 8;
+            possibleMovesSouth.push(tempFieldID);
+            if (this.getFieldById(tempFieldID).getOccupiedBy() !== null) {
+                break;
+            }
+            safetyCounter++;
+            if (safetyCounter > 100) {
+                console.log('SAFETY');
+
+                break;
+            }
+        }
+
+        let possibleMoves = [...possibleMovesWest, ...possibleMovesNorth, ...possibleMovesEast, ...possibleMovesSouth];
+        console.log('XXXXXX possibleMovesWest ' + possibleMovesWest);
+        console.log('XXXXXX possibleMovesNorth ' + possibleMovesNorth);
+        console.log('XXXXXX possibleMovesEast ' + possibleMovesEast);
+        console.log('XXXXXX possibleMovesSouth ' + possibleMovesSouth);
+        console.log('XXXXXX all possibleMoves ' + possibleMoves);
+        this.highlightFields(possibleMoves);
         return [''];
     }
 
@@ -337,5 +417,10 @@ export class Board {
     }
 
     public getFields(): Field[][] { return this.fields; }
+
+    private getFieldById(id: number): Field {
+
+        return this.fields[7 - Math.floor(id / 8)][id % 8];
+    }
 
 }
