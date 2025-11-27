@@ -248,126 +248,96 @@ export class Board {
     }
 
     private calculatePossibleMovesForRook(originField: Field): string[] {
+        const originID = originField.getId();
+        if (originID === null) return [];
 
-        let originID = originField.getId();
-        if (originID === null) {
-            return [];
-        }
-        // let currentRow = Math.floor(originID / 8);
-        // let currentFile = originID % 8;
+        const originColor = originField.getOccupiedBy()!.getColor();
 
-        let possibleMovesWest: number[] = [];
-        let possibleMovesNorth: number[] = [];
-        let possibleMovesEast: number[] = [];
-        let possibleMovesSouth: number[] = [];
+        const directions = { // with offsets
+            west: -1,
+            east: +1,
+            north: +8,
+            south: -8
+        };
 
-        let possibleCaptures: number[] = [];
+        const possibleQuietMoves: number[] = []; // quiet move -> a move that does not capture a piece or deliver a check
+        const possibleCaptures: number[] = [];
+        // todo possible checks
 
-        let safetyCounter = 0;
-        let tempFieldID = originID;
+        const collectMovesInDirection = (startID: number, offset: number) => {
+            let id = startID;
 
-        while (tempFieldID % 8 !== 0) {
-            tempFieldID = tempFieldID - 1;
+            while (true) {
+                id += offset;
 
-            let possiblePiece = this.getFieldById(tempFieldID).getOccupiedBy()
-            if (possiblePiece !== null) {
-                if (possiblePiece.getColor() === originField.getOccupiedBy()!.getColor()) { // if possible piece is an enemy piece, we can move to that square
-                    console.log('xxx own piece on way');
+                // Stop if outside board
+                if (id < 0 || id > 63) break;
 
-                    break;
-                } else {
-                    possibleCaptures.push(tempFieldID); // if possible piece is our own piece, we can only move to that square if there are no captures
-                    break;
+                // horizontal boundaries check
+                if (offset === -1 && id % 8 === 7) break;   // west wrap
+                if (offset === +1 && id % 8 === 0) break;   // east wrap
+
+                const field = this.getFieldById(id);
+                const piece: Piece | null = field.getOccupiedBy();
+
+                if (piece !== null) {
+                    if (piece.getColor() === originColor) {
+                        break;
+                    } else {
+                        possibleCaptures.push(id);
+                        break;
+                    }
                 }
-            } else {
-                possibleMovesWest.push(tempFieldID);
-            }
 
-            safetyCounter++;
-            if (safetyCounter > 100) {
-                console.log('SAFETY');
-                break;
-            }
-        }
+                if (piece === null) {
+                    possibleQuietMoves.push(id);
+                    continue;
+                }
 
-        tempFieldID = originID;
-        while ((Math.floor(tempFieldID / 8)) !== 7) {
-            tempFieldID = tempFieldID + 8;
-            possibleMovesNorth.push(tempFieldID);
-            if (this.getFieldById(tempFieldID).getOccupiedBy() !== null) {
-                break;
-            }
-            safetyCounter++;
-            if (safetyCounter > 100) {
-                console.log('SAFETY');
-                break;
-            }
-        }
+                // Blocked by own piece
+                if (piece.getColor() === originColor) break;
 
-        tempFieldID = originID;
-        while (tempFieldID % 8 !== 7) {
-            console.log('xxx loop')
-            tempFieldID = tempFieldID + 1;
-            possibleMovesEast.push(tempFieldID);
-            if (this.getFieldById(tempFieldID).getOccupiedBy() !== null) {
+                // Enemy piece → capture possible, but path ends
+                possibleCaptures.push(id);
                 break;
             }
-            safetyCounter++;
-            if (safetyCounter > 100) {
-                console.log('SAFETY');
-                break;
-            }
-        }
+        };
 
-        tempFieldID = originID;
-        while ((Math.floor(tempFieldID / 8)) % 8 !== 0) {
-            tempFieldID = tempFieldID - 8;
-            possibleMovesSouth.push(tempFieldID);
-            if (this.getFieldById(tempFieldID).getOccupiedBy() !== null) {
-                break;
-            }
-            safetyCounter++;
-            if (safetyCounter > 100) {
-                console.log('SAFETY');
+        // Compute all four directions
+        collectMovesInDirection(originID, directions.west);
+        collectMovesInDirection(originID, directions.east);
+        collectMovesInDirection(originID, directions.north);
+        collectMovesInDirection(originID, directions.south);
 
-                break;
-            }
-        }
-
-        let possibleMoves = [...possibleMovesWest, ...possibleMovesNorth, ...possibleMovesEast, ...possibleMovesSouth];
-        console.log('XXXXXX possibleMovesWest ' + possibleMovesWest);
-        console.log('XXXXXX possibleMovesNorth ' + possibleMovesNorth);
-        console.log('XXXXXX possibleMovesEast ' + possibleMovesEast);
-        console.log('XXXXXX possibleMovesSouth ' + possibleMovesSouth);
-        console.log('XXXXXX all possibleMoves ' + possibleMoves);
-        this.highlightFields(possibleMoves);
-        return [''];
+        this.highlightFields(possibleQuietMoves, possibleCaptures);
+        return possibleQuietMoves.map(String);
     }
 
-    private highlightFields(possibleMoves: number[]): void {
+    private highlightFields(possibleQuietMoves: number[], possibleCaptures: number[]): void {
 
-        console.log('xxx possibleMoves', possibleMoves);
+        console.log('xxxxxxx possibleQuietMoves', possibleQuietMoves);
+        console.log('xxxxxxx possibleCaptures', possibleCaptures);
+        const fillFieldWithColor = (field: Field, color: string) => {
+            let { x, y } = field.getPosition();
+            console.log('xxx field', field.getNotation());
+            field.getGraphics().clear();
+            field.getGraphics().rect(x, y, this.config.squareWidth, this.config.squareWidth).fill(color);
+        }
 
         for (let row of this.fields) {
             for (let field of row) {
-                if (possibleMoves.includes(field.getId())) {
 
-                    let { x, y } = field.getPosition();
-                    console.log('xxx field', field.getNotation());
-                    field.getGraphics().clear();
-                    field.getGraphics().rect(x, y, this.config.squareWidth, this.config.squareWidth).fill(this.config.colorHighlight);
+                if (possibleQuietMoves.includes(field.getId())) {
+
+                    fillFieldWithColor(field, this.config.possibleMoveColorHighlight);
+                }
+
+                if (possibleCaptures.includes(field.getId())) {
+
+                    fillFieldWithColor(field, this.config.captureColorHighlight);
                 }
             }
         }
-        // let { x, y } = this.fields[0][0].getPosition();
-
-        // later: change color without removing it from stage
-        // this.fields[0][0].getGraphics().clear();
-        // this.fields[0][0].getGraphics().fill({ color: this.config.colorHighlight });
-        // this.fields[0][0].getGraphics().rect(x, y, this.config.squareWidth, this.config.squareWidth).fill(this.config.colorHighlight);
-
-
-        // this.fields[0][0].setGraphics.alpha = 0.5;
     }
 
     private turnOffHighlights(): void {
