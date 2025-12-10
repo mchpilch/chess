@@ -247,7 +247,7 @@ export class Board {
         }
     }
 
-    private calculatePossibleMovesForRook(originField: Field): string[] {
+    private calculatePossibleMovesForRook(originField: Field): string[] { // for real it's queen now
         const originID = originField.getId();
         if (originID === null) return [];
 
@@ -257,7 +257,11 @@ export class Board {
             west: -1,
             east: +1,
             north: +8,
-            south: -8
+            south: -8,
+            northWest: +7,
+            northEast: +9,
+            southWest: -9,
+            southEast: -7,
         };
 
         const possibleQuietMoves: number[] = []; // quiet move -> a move that does not capture a piece or deliver a check
@@ -276,6 +280,16 @@ export class Board {
                 // horizontal boundaries check
                 if (offset === -1 && id % 8 === 7) break;   // west wrap
                 if (offset === +1 && id % 8 === 0) break;   // east wrap
+
+                // NW (+7) and SW (-9) - moving left - wrap when file = 7
+                if ((offset === 7 || offset === -9) && id % 8 === 7) { // If  moving left (file - 1), the only way to land on file 7 is if  jumped across the board - illegal so break
+                    console.log('xxx id', id);
+                    break;
+                }
+
+                // NE (+9) and SE (-7) - moving right - wrap when file = 0
+                if ((offset === 9 || offset === -7) && id % 8 === 0) break;
+
 
                 const field = this.getFieldById(id);
                 const piece: Piece | null = field.getOccupiedBy();
@@ -297,7 +311,7 @@ export class Board {
                 // Blocked by own piece
                 if (piece.getColor() === originColor) break;
 
-                // Enemy piece → capture possible, but path ends
+                // Enemy piece - capture possible, but path ends
                 possibleCaptures.push(id);
                 break;
             }
@@ -309,9 +323,17 @@ export class Board {
         collectMovesInDirection(originID, directions.north);
         collectMovesInDirection(originID, directions.south);
 
+        collectMovesInDirection(originID, directions.northWest);
+        collectMovesInDirection(originID, directions.northEast);
+        collectMovesInDirection(originID, directions.southEast);
+        collectMovesInDirection(originID, directions.southWest);
+
         this.highlightFields(possibleQuietMoves, possibleCaptures);
         return possibleQuietMoves.map(String);
     }
+
+
+
 
     private highlightFields(possibleQuietMoves: number[], possibleCaptures: number[]): void {
 
@@ -319,7 +341,7 @@ export class Board {
         console.log('xxxxxxx possibleCaptures', possibleCaptures);
         const fillFieldWithColor = (field: Field, color: string) => {
             let { x, y } = field.getPosition();
-            console.log('xxx field', field.getNotation());
+            // console.log('xxx field', field.getNotation());
             field.getGraphics().clear();
             field.getGraphics().rect(x, y, this.config.squareWidth, this.config.squareWidth).fill(color);
         }
