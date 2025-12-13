@@ -5,6 +5,38 @@ import { Field } from "./field";
 import { Listener } from "./listener";
 import { GameState } from "./gameState";
 
+type SlidingPiece = 'rook' | 'bishop' | 'queen';
+
+type Direction = {
+    name: string;
+    offset: number;
+};
+
+const ROOK_DIRECTIONS: Direction[] = [
+    { name: 'west', offset: -1 },
+    { name: 'east', offset: +1 },
+    { name: 'north', offset: +8 },
+    { name: 'south', offset: -8 },
+];
+
+const BISHOP_DIRECTIONS: Direction[] = [
+    { name: 'northWest', offset: +7 },
+    { name: 'northEast', offset: +9 },
+    { name: 'southWest', offset: -9 },
+    { name: 'southEast', offset: -7 },
+];
+
+const QUEEN_DIRECTIONS: Direction[] = [
+    ...ROOK_DIRECTIONS,
+    ...BISHOP_DIRECTIONS,
+];
+
+const SLIDING_DIRECTIONS: Record<SlidingPiece, Direction[]> = {
+    rook: ROOK_DIRECTIONS,
+    bishop: BISHOP_DIRECTIONS,
+    queen: QUEEN_DIRECTIONS,
+};
+
 
 export class Board {
 
@@ -219,50 +251,43 @@ export class Board {
 
     private calculatePossibleMoves(pieceId: number, originField: Field): void {
         let piece = this.findPieceById(pieceId);
+
         console.log('xxx piece', piece?.getRole(), piece?.getColor());
         console.log('xxx originField', originField?.getNotation(), originField?.getId());
-        let possibleMoves: Field[] = [];
+
+        const role = piece!.getRole(); // ! 
         let tempPossibleMovesAsNotation: string[] = [];
-        switch (piece?.getRole()) {
-            case 'rook':
-                tempPossibleMovesAsNotation = this.calculatePossibleMovesForRook(originField);
-                break;
-            // case 'n':
-            //     this.possibleMoves = this.calculatePossibleMovesForKnight(pieceId, originField);
-            //     break;
-            // case 'b':
-            //     this.possibleMoves = this.calculatePossibleMovesForBishop(pieceId, originField);
-            //     break;
-            // case 'q':
-            //     this.possibleMoves = this.calculatePossibleMovesForQueen(pieceId, originField);
-            //     break;
-            // case 'k':
-            //     this.possibleMoves = this.calculatePossibleMovesForKing(pieceId, originField);
-            //     break;
-            // case 'p':
-            //     this.possibleMoves = this.calculatePossibleMovesForPawn(pieceId, originField);
-            //     break;
-            default:
-                tempPossibleMovesAsNotation = [];
+
+        if (role === 'rook' || role === 'bishop' || role === 'queen') {
+            tempPossibleMovesAsNotation = this.calculatePossibleMovesForSlidingPiece(originField, role);
+        } else {
+
+            switch (piece?.getRole()) {
+                // case 'n':
+                //     this.possibleMoves = this.calculatePossibleMovesForKnight(pieceId, originField);
+                //     break;
+
+                // case 'k':
+                //     this.possibleMoves = this.calculatePossibleMovesForKing(pieceId, originField);
+                //     break;
+                // case 'p':
+                //     this.possibleMoves = this.calculatePossibleMovesForPawn(pieceId, originField);
+                //     break;
+                default:
+                    tempPossibleMovesAsNotation = [];
+            }
         }
+
+
+
     }
 
-    private calculatePossibleMovesForRook(originField: Field): string[] { // for real it's queen now
+    private calculatePossibleMovesForSlidingPiece(originField: Field, pieceType: SlidingPiece): string[] { // for real it's queen now
+
         const originID = originField.getId();
         if (originID === null) return [];
 
         const originColor = originField.getOccupiedBy()!.getColor();
-
-        const directions = { // with offsets
-            west: -1,
-            east: +1,
-            north: +8,
-            south: -8,
-            northWest: +7,
-            northEast: +9,
-            southWest: -9,
-            southEast: -7,
-        };
 
         const possibleQuietMoves: number[] = []; // quiet move -> a move that does not capture a piece or deliver a check
         const possibleCaptures: number[] = [];
@@ -295,6 +320,7 @@ export class Board {
                 const piece: Piece | null = field.getOccupiedBy();
 
                 if (piece !== null) {
+                    // Blocked by own piece
                     if (piece.getColor() === originColor) {
                         break;
                     } else {
@@ -308,32 +334,19 @@ export class Board {
                     continue;
                 }
 
-                // Blocked by own piece
-                if (piece.getColor() === originColor) break;
-
                 // Enemy piece - capture possible, but path ends
                 possibleCaptures.push(id);
                 break;
             }
         };
 
-        // Compute all four directions
-        collectMovesInDirection(originID, directions.west);
-        collectMovesInDirection(originID, directions.east);
-        collectMovesInDirection(originID, directions.north);
-        collectMovesInDirection(originID, directions.south);
-
-        collectMovesInDirection(originID, directions.northWest);
-        collectMovesInDirection(originID, directions.northEast);
-        collectMovesInDirection(originID, directions.southEast);
-        collectMovesInDirection(originID, directions.southWest);
+        for (const direction of SLIDING_DIRECTIONS[pieceType]) {
+            collectMovesInDirection(originID, direction.offset);
+        }
 
         this.highlightFields(possibleQuietMoves, possibleCaptures);
         return possibleQuietMoves.map(String);
     }
-
-
-
 
     private highlightFields(possibleQuietMoves: number[], possibleCaptures: number[]): void {
 

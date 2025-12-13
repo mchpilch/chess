@@ -7,6 +7,7 @@ export const boardConfig = {
     colorDark: '#9e705b',
     colorLight: '#e8d3b8',
     possibleMoveColorHighlight: '#0ed6ccff',
+    possibleCheckColorHighlight: '#ffff00ff',
     captureColorHighlight: '#bd3ab9ff',
     // colorLight: '#4b734eff',
     // offset : {
