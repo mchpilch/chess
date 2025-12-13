@@ -66,7 +66,7 @@ export class FenParser {
         let rowIndex = 0;
         let colIndex = 0;
 
-        let maxIterations = 1000; // safety limit
+        let maxIterations = 72; // safety limit // 64 pieces 8 rows
         let iterations = 0;
         // instead of sting test PieceKey type later
         const pieceMap: Record<string, (color: 'w' | 'b') => Piece> = { // Record of (string,function) -> keys - strings (r,n,b...) and values are (color: 'w' | 'b') => Piece (functions that take 'w' or 'b' and return a Piece)

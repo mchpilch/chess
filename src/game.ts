@@ -44,8 +44,9 @@ export class Game {
         // this.fenParser = new FenParser('r1bk3r/p2pBpNp/n4n2/1p1NP2P/6P1/3P4/P1P1K3/q5b1 w KQkq - 0 1');
         // this.fenParser = new FenParser('4k2r/6r1/8/8/8/8/3R4/R3K3 w Qk - 0 1');
         // this.fenParser = new FenParser('r7/8/8/R7/8/8/8/8 w KQkq i3 0 1'); // only rook
-        this.fenParser = new FenParser('rnbqkbnr/8/8/8/8/8/8/RNBQKBNR w KQkq i3 0 1'); // starting pos
-        // this.fenParser = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq i3 0 1'); // starting pos
+        // this.fenParser = new FenParser('rnbqkbnr/8/8/8/8/8/8/RNBQKBNR w KQkq i3 0 1'); // starting pos
+        // this.fenParser = new FenParser('rQQQQQQQr/Qnbqkbnr/QQQQQQQQ/QQQQQQQQ/QQQQQQQQ/QQQQQQQQ/QQQQQQQQ/QQQQQQQQ w - - 0 1'); // starting pos
+        this.fenParser = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq i3 0 1'); // starting pos
 
         // setup managers
         this.app = gameInitData.app;

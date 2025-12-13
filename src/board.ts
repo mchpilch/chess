@@ -5,7 +5,7 @@ import { Field } from "./field";
 import { Listener } from "./listener";
 import { GameState } from "./gameState";
 
-type SlidingPiece = 'rook' | 'bishop' | 'queen';
+type SlidingPiece = 'r' | 'b' | 'q';
 
 type Direction = {
     name: string;
@@ -32,9 +32,9 @@ const QUEEN_DIRECTIONS: Direction[] = [
 ];
 
 const SLIDING_DIRECTIONS: Record<SlidingPiece, Direction[]> = {
-    rook: ROOK_DIRECTIONS,
-    bishop: BISHOP_DIRECTIONS,
-    queen: QUEEN_DIRECTIONS,
+    r: ROOK_DIRECTIONS,
+    b: BISHOP_DIRECTIONS,
+    q: QUEEN_DIRECTIONS,
 };
 
 
@@ -256,20 +256,20 @@ export class Board {
         console.log('xxx originField', originField?.getNotation(), originField?.getId());
 
         const role = piece!.getRole(); // ! 
+        console.log('xxx role', role);
         let tempPossibleMovesAsNotation: string[] = [];
 
-        if (role === 'rook' || role === 'bishop' || role === 'queen') {
+        if (role === 'r' || role === 'b' || role === 'q') {
             tempPossibleMovesAsNotation = this.calculatePossibleMovesForSlidingPiece(originField, role);
         } else {
 
             switch (piece?.getRole()) {
-                // case 'n':
-                //     this.possibleMoves = this.calculatePossibleMovesForKnight(pieceId, originField);
-                //     break;
-
+                case 'n':
+                    tempPossibleMovesAsNotation = this.calculatePossibleMovesForKnight(originField);
+                    break;
                 // case 'k':
-                //     this.possibleMoves = this.calculatePossibleMovesForKing(pieceId, originField);
-                //     break;
+                // this.possibleMoves = this.calculatePossibleMovesForKing(pieceId, originField);
+                // break;
                 // case 'p':
                 //     this.possibleMoves = this.calculatePossibleMovesForPawn(pieceId, originField);
                 //     break;
@@ -285,13 +285,14 @@ export class Board {
     private calculatePossibleMovesForSlidingPiece(originField: Field, pieceType: SlidingPiece): string[] { // for real it's queen now
 
         const originID = originField.getId();
+        console.log('xxx calculatePossibleMovesForSlidingPiece', originField, pieceType);
+
         if (originID === null) return [];
 
         const originColor = originField.getOccupiedBy()!.getColor();
 
         const possibleQuietMoves: number[] = []; // quiet move -> a move that does not capture a piece or deliver a check
-        const possibleCaptures: number[] = [];
-        // todo possible checks
+        const possibleCapturesOrCheck: number[] = [];
 
         const collectMovesInDirection = (startID: number, offset: number) => {
             let id = startID;
@@ -324,7 +325,7 @@ export class Board {
                     if (piece.getColor() === originColor) {
                         break;
                     } else {
-                        possibleCaptures.push(id);
+                        possibleCapturesOrCheck.push(id);
                         break;
                     }
                 }
@@ -335,7 +336,7 @@ export class Board {
                 }
 
                 // Enemy piece - capture possible, but path ends
-                possibleCaptures.push(id);
+                possibleCapturesOrCheck.push(id);
                 break;
             }
         };
@@ -344,7 +345,44 @@ export class Board {
             collectMovesInDirection(originID, direction.offset);
         }
 
-        this.highlightFields(possibleQuietMoves, possibleCaptures);
+        this.highlightFields(possibleQuietMoves, possibleCapturesOrCheck);
+        return possibleQuietMoves.map(String);
+    }
+    private calculatePossibleMovesForKnight(originField: Field): string[] { // for real it's queen now
+
+        const originID = originField.getId();
+
+        console.log('xxx calculatePossibleMovesForSlidingPiece', originField);
+
+        if (originID === null) return [];
+        let knightOffsets = [-17, -15, -10, -6, 6, 10, 15, 17];
+        let possibleMovesPreBoundriesCheck = knightOffsets.map(offset => originID + offset);
+        let possibleMoves = possibleMovesPreBoundriesCheck.filter(id => id >= 0 && id < 64);
+
+
+        const originColor = originField.getOccupiedBy()!.getColor();
+
+        const possibleQuietMoves: number[] = []; // quiet move -> a move that does not capture a piece or deliver a check
+        const possibleCapturesOrCheck: number[] = [];
+
+        for (let fieldID of possibleMoves) {
+            const field = this.getFieldById(fieldID);
+            const piece: Piece | null = field.getOccupiedBy();
+            if (piece !== null) {
+                // Blocked by own piece
+                if (piece.getColor() === originColor) {
+                    continue;
+                } else {
+                    possibleCapturesOrCheck.push(fieldID);
+                    continue;
+                }
+            } else {
+                possibleQuietMoves.push(fieldID)
+            }
+        }
+
+
+        this.highlightFields(possibleQuietMoves, possibleCapturesOrCheck);
         return possibleQuietMoves.map(String);
     }
 
@@ -368,9 +406,17 @@ export class Board {
                 }
 
                 if (possibleCaptures.includes(field.getId())) {
+                    console.log('xxx field.getOccupiedBy()?.getRole()', field.getOccupiedBy()?.getRole());
+                    if (field.getOccupiedBy()?.getRole() === 'king') {
+                        console.log('xxx check at field.getOccupiedBy()', field.getOccupiedBy());
+                        fillFieldWithColor(field, this.config.possibleCheckColorHighlight);
+                    } else {
+                        console.log('xxx capture at field.getOccupiedBy()', field.getOccupiedBy());
+                        fillFieldWithColor(field, this.config.captureColorHighlight);
+                    }
 
-                    fillFieldWithColor(field, this.config.captureColorHighlight);
                 }
+
             }
         }
     }

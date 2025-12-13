@@ -4,6 +4,17 @@ import { GameState } from "./gameState";
 import { pieceConfig } from "./Pieces/pieceConfig";
 import { boardConfig } from "./boardConfig";
 
+const roleMap = {
+  king: 'k',
+  queen: 'q',
+  rook: 'r',
+  bishop: 'b',
+  knight: 'n',
+  pawn: 'p',
+};
+type PieceType = keyof typeof roleMap; // so king, queen, etc.
+type Role = typeof roleMap[PieceType]; // so k, q, etc.
+
 export class Piece extends Container {
 
   private id!: number;
@@ -11,20 +22,21 @@ export class Piece extends Container {
   public onDragStarted!: Signal<{ pieceId: number, x: number, y: number }>;
   public onDropped!: Signal<{ pieceId: number, x: number, y: number }>;
   private color!: "w" | "b";
-  private role!: 'r' | 'n' | 'b' | 'q' | 'k' | 'p';
+  private role!: Role;
+
   private key!: string;
   private gameState!: GameState;
   private config !: typeof pieceConfig;
   private boardConfig !: typeof boardConfig;
 
-  constructor(type: string, color: "w" | "b", id: number) {
+  constructor(type: PieceType, color: "w" | "b", id: number) {
 
     super();
-
+    console.log('Piece constructor, type', type, color, id);
     this.init(type, color, id);
   }
 
-  private init(type: string, color: "w" | "b", id: number) {
+  private init(type: PieceType, color: "w" | "b", id: number) {
 
     // Managers
     this.gameState = GameState.getInstance();
@@ -33,7 +45,9 @@ export class Piece extends Container {
     // Atributers
     this.id = id;
     this.color = color;
-    this.role = type.toLocaleLowerCase() as 'r' | 'n' | 'b' | 'q' | 'k' | 'p'; // improve later 
+
+
+    this.role = roleMap[type];// as 'r' | 'n' | 'b' | 'q' | 'k' | 'p'; // improve later 
     const key = `${type}-${color}`;
     this.key = key;
 
@@ -43,12 +57,12 @@ export class Piece extends Container {
     sprite.scale.set(this.config.pieceScale); // 2 - 300, 1 - 150, 0.5  - 75
 
     let transparentBackground = new Graphics().rect(  // Bg to visualize hit area
-      -this.boardConfig.squareWidth/2, -this.boardConfig.squareWidth/2, this.boardConfig.squareWidth, this.boardConfig.squareWidth
+      -this.boardConfig.squareWidth / 2, -this.boardConfig.squareWidth / 2, this.boardConfig.squareWidth, this.boardConfig.squareWidth
     ).fill(this.config.pieceHighlightColor);
     transparentBackground.alpha = this.config.pieceBgAlpha;
     this.addChild(transparentBackground);
     this.addChild(sprite);
-    this.hitArea = new Rectangle(-this.boardConfig.squareWidth/2, -this.boardConfig.squareWidth/2, this.boardConfig.squareWidth, this.boardConfig.squareWidth);
+    this.hitArea = new Rectangle(-this.boardConfig.squareWidth / 2, -this.boardConfig.squareWidth / 2, this.boardConfig.squareWidth, this.boardConfig.squareWidth);
 
     // Events and listeners
     this.onDragStarted = new Signal<{ pieceId: number, x: number, y: number }>();
