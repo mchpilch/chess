@@ -1,21 +1,13 @@
-import { Piece } from "./piece";
-import { Bishop } from "./Pieces/bishop";
-import { King } from "./Pieces/king";
-import { Knight } from "./Pieces/knight";
-import { Pawn } from "./Pieces/pawn";
-import { Queen } from "./Pieces/queen";
-import { Rook } from "./Pieces/rook";
+export type FenPiece = {
+    role: 'r' | 'n' | 'b' | 'q' | 'k' | 'p';
+    color: 'w' | 'b';
+};
 
-export type Square = (Piece | null);
-export type Board = Square[][];
-// type PieceKey = 'r' | 'n' | 'b' | 'q' | 'k' | 'p'; // add
+export type FenBoard = (FenPiece | null)[][];
 
 export class FenParser {
 
-    //The sequence "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR" 
-    // describes the piece placement field of the starting position of a game of chess.
-    private board!: Board;
-    private nextPieceId = 0; // in future consider mechanism that generates unique ids not in fen parser but while instantiating the piece
+    private board!: FenBoard;
 
     private activeColor!: 'w' | 'b';
     private castlingRights!: { K: true, Q: true, k: true, q: true }; // todo
@@ -28,11 +20,10 @@ export class FenParser {
         this.parse(fenPosition);
     }
 
-    public getBoard(): Board {
+    public getFenBoard(): FenBoard {
 
         return this.board;
     }
-
 
     private parse(fenPosition: string) {
 
@@ -51,8 +42,9 @@ export class FenParser {
         // this.fullMoveNumber = this.parseFullMoveNumber(parts[5]);
     }
 
-    private parseBoard(notation: string): Board {
-        let board: Board = [];
+    private parseBoard(notation: string): FenBoard {
+
+        let board: FenBoard = [];
 
         for (let i = 0; i < 8; i++) {
             const row = [];
@@ -62,67 +54,35 @@ export class FenParser {
             board.push(row);
         }
 
-        let n = 0;
         let rowIndex = 0;
         let colIndex = 0;
 
-        let maxIterations = 72; // safety limit // 64 pieces 8 rows
-        let iterations = 0;
-        // instead of sting test PieceKey type later
-        const pieceMap: Record<string, (color: 'w' | 'b') => Piece> = { // Record of (string,function) -> keys - strings (r,n,b...) and values are (color: 'w' | 'b') => Piece (functions that take 'w' or 'b' and return a Piece)
-            'r': (color) => new Rook(color, this.nextPieceId++),
-            'n': (color) => new Knight(color, this.nextPieceId++),
-            'b': (color) => new Bishop(color, this.nextPieceId++),
-            'q': (color) => new Queen(color, this.nextPieceId++),
-            'k': (color) => new King(color, this.nextPieceId++),
-            'p': (color) => new Pawn(color, this.nextPieceId++),
-        };
-
-        while (n < notation.length) {
-
-            const char = notation[n];
-
-            iterations++;
-            if (iterations > maxIterations) { // just for safety with while loop
-                console.warn("Breaking loop: too many iterations!");
-                break;
-            }
+        for (const char of notation) {
 
             if (char === '/') { // new row
-                n++;
                 rowIndex++;
                 colIndex = 0;
                 continue;
             }
 
-            if (isNaN(Number(char)) === false) { // when char isnumber
+            if (isNaN(Number(char)) === false) { // when char is number
                 colIndex += Number(char);
-                n++;
                 continue;
             }
 
             // Determine piece color
             const color: 'w' | 'b' = char === char.toUpperCase() ? 'w' : 'b';
-            const pieceKey = char.toLowerCase();
 
-            // Examples:
-            // const whiteRook = pieceMap['r']('w'); // returns a Rook instance with color 'w'
-            // const blackPawn = pieceMap['p']('b'); // returns a Pawn instance with color 'b'
+            board[rowIndex][colIndex] = {
+                role: char.toLowerCase() as FenPiece['role'],
+                color,
+            };
 
-            const createPiece = pieceMap[pieceKey];
-            if (createPiece) {
-                board[rowIndex][colIndex] = createPiece(color);
-            } else {
-                console.warn(`Unknown piece symbol '${char}'`);
-            }
-
-            n++;
             colIndex++;
         }
 
         return board;
     }
-
 
     private parseActiveColor(fenActiveColor: string): 'w' | 'b' {
         return fenActiveColor === 'w' ? 'w' : 'b';

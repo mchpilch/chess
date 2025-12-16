@@ -36,3 +36,7 @@
 
 // // chess.com and lichess are using dom elemts not canvas ? - > https://svelte.dev/
 // GITHUB project out of this actually not just repo?
+
+// coupling - sprzęganie
+
+// https://refactoring.guru/design-patterns/factory-method #pieceFactory

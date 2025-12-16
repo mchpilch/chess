@@ -119,14 +119,17 @@ export class Board {
 
     public getBoard(): Container { return this.board; }
 
-    public updateFieldsWithFenParserResult(fenPieceBoard: (Piece | null)[][]) {
+    public attachListenersToPieces() {
 
         // Attach listeners to all pieces
-        for (const row of fenPieceBoard) {
-            for (const piece of row) {
+        for (const row of this.fields) {
+            for (const field of row) {
 
+                let piece = field.getOccupiedBy();
                 if (piece === null) continue;
 
+                console.log('xxx field', field);
+                
                 piece.onDragStarted.add(
                     new Listener<{ pieceId: number; x: number; y: number }>(
                         payload => this.handlePieceDragStarted(payload)
@@ -277,12 +280,9 @@ export class Board {
                     tempPossibleMovesAsNotation = [];
             }
         }
-
-
-
     }
 
-    private calculatePossibleMovesForSlidingPiece(originField: Field, pieceType: SlidingPiece): string[] { // for real it's queen now
+    private calculatePossibleMovesForSlidingPiece(originField: Field, pieceType: SlidingPiece): string[] { // decided to not include king as it behaves differently then other pieces in terms of checks
 
         const originID = originField.getId();
         console.log('xxx calculatePossibleMovesForSlidingPiece', originField, pieceType);
@@ -348,11 +348,11 @@ export class Board {
         this.highlightFields(possibleQuietMoves, possibleCapturesOrCheck);
         return possibleQuietMoves.map(String);
     }
-    private calculatePossibleMovesForKnight(originField: Field): string[] { // for real it's queen now
+    private calculatePossibleMovesForKnight(originField: Field): string[] { 
 
         const originID = originField.getId();
 
-        console.log('xxx calculatePossibleMovesForSlidingPiece', originField);
+        console.log('xxx calculatePossibleMovesForKnight', originField);
 
         if (originID === null) return [];
         let knightOffsets = [-17, -15, -10, -6, 6, 10, 15, 17];
