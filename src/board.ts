@@ -1,9 +1,10 @@
-import { Container, Graphics, Text, TextStyle } from "pixi.js";
+import { Container, ContainerChild, Graphics, Text, TextStyle } from "pixi.js";
 import { boardConfig } from "./boardConfig";
 import { Piece } from "./piece";
 import { Field } from "./field";
 import { Listener } from "./listener";
 import { GameState } from "./gameState";
+import { FieldView } from "./fieldView";
 
 type SlidingPiece = 'r' | 'b' | 'q';
 
@@ -41,7 +42,10 @@ const SLIDING_DIRECTIONS: Record<SlidingPiece, Direction[]> = {
 export class Board {
 
     private board!: Container;
-    private fields!: Field[][];
+
+    private fields!: Field[][]; // logical
+    private fieldViews!: FieldView[][]; // pixi rendering
+
     private config = boardConfig;
     private gameState !: GameState;
     private dragOriginField: Field | null = null;
@@ -49,6 +53,7 @@ export class Board {
     constructor() {
 
         this.fields = [];
+        this.fieldViews = [];
         this.board = this.generateBoard();
         this.gameState = GameState.getInstance();
         this.dragOriginField = null;
@@ -60,59 +65,55 @@ export class Board {
 
         for (let r = 0; r < this.config.numberOfRows; r++) {
 
-            let row = [];
+            let rowLogical = [];
+            let rowView = [];
             for (let f = 0; f < this.config.numberOfFiles; f++) {
-
+                // for field and fieldView
                 const id = this.config.numberOfRows * (this.config.numberOfRows - r - 1) + f; // improved id calc so a1 corresponds to 0 a2 to 1 and so on
-
+                // for field 
                 const notation = `${String.fromCharCode(97 + f)}${this.config.numberOfRows - r}`; // a1..h8 // 97 is a lowercase "a" // files got letters while rows have numbers
-                const x = this.config.offset.x + f * this.config.squareWidth; //  - this.config.squareWidth / 2 is necessary as pieces are anchored in the middle of spites 
-                const y = this.config.offset.y + r * this.config.squareWidth; // 
-
-                const color = (r + f) % 2 === 0 ? this.config.colorDark : this.config.colorLight;
-                const square = new Graphics()
-                    .rect(
-                        x,
-                        y,
-                        this.config.squareWidth,
-                        this.config.squareWidth
-                    )
-                    .fill(color);
-
-                // Wrap the square in a container
                 const occupiedBy: Piece | null = null;
-                const position = { x, y };
-                const style = new TextStyle({
-                    fontSize: 12,
-                    fill: 0x000000,
-                });
-                const textNotation = new Text({ text: notation, style: style });
-                textNotation.position.set(
-                    x + this.config.textNotationOffset.x,
-                    y + this.config.textNotationOffset.y
-                );
 
-                const textFieldId = new Text({ text: id, style: style });
-                textFieldId.position.set(
-                    x + this.config.textFieldIdOffset.x,
-                    y + this.config.textFieldIdOffset.y
-                );
                 const field = new Field(
                     id,
                     notation,
                     occupiedBy,
-                    position,
-                    square, // graphics
-                    textNotation
                 );
 
-                row.push(field);
+                const x = this.config.offset.x + f * this.config.squareWidth; //  - this.config.squareWidth / 2 is necessary as pieces are anchored in the middle of spites 
+                const y = this.config.offset.y + r * this.config.squareWidth; // 
+                const position = { x, y };
+                const size = this.config.squareWidth;
+                const notationTextValue = notation;
 
-                boardContainer.addChild(square);
-                boardContainer.addChild(textNotation); // notation
-                boardContainer.addChild(textFieldId); // ids
+                const fieldView = new FieldView(
+                    id,
+                    position,
+                    size,
+                    notationTextValue,
+                    this.config //temp?
+                );
+
+                const color = (r + f) % 2 === 0 ? this.config.colorDark : this.config.colorLight;
+                fieldView.draw(color);
+
+                rowLogical.push(field);
+                rowView.push(fieldView);
+
+                boardContainer.addChild(fieldView.getGraphics());
+
+                let notationTextValue2 = fieldView.getNotationText();
+                if (typeof notationTextValue2 !== 'undefined') {
+                    boardContainer.addChild(notationTextValue2);
+                }
+                let idTextValue2 = fieldView.getIdText();
+                if (typeof idTextValue2 !== 'undefined') {
+                boardContainer.addChild(idTextValue2);
+                }
+         
             }
-            this.fields.push(row);
+            this.fields.push(rowLogical);
+            this.fieldViews.push(rowView);
         }
         return boardContainer;
     };
@@ -129,7 +130,7 @@ export class Board {
                 if (piece === null) continue;
 
                 console.log('xxx field', field);
-                
+
                 piece.onDragStarted.add(
                     new Listener<{ pieceId: number; x: number; y: number }>(
                         payload => this.handlePieceDragStarted(payload)
@@ -222,19 +223,19 @@ export class Board {
         // console.log('xxx this.gameState.getMoveCount()', this.gameState.getMoveCount());
     }
 
-    private findNearestField(px: number, py: number): Field | null {
-        let nearest: Field | null = null;
+    private findNearestField(px: number, py: number): FieldView | null {
+        let nearest: FieldView | null = null;
         let shortest = Infinity;
-        for (const row of this.fields) {
-            for (const field of row) {
+        for (const row of this.fieldViews) {
+            for (const fieldView of row) {
 
-                const dx = px - field.getPosition().x - this.config.squareWidth / 2;
-                const dy = py - field.getPosition().y - this.config.squareWidth / 2;
+                const dx = px - fieldView.getPosition().x - this.config.squareWidth / 2;
+                const dy = py - fieldView.getPosition().y - this.config.squareWidth / 2;
                 const distSq = dx * dx + dy * dy;
 
                 if (distSq < shortest) {
                     shortest = distSq;
-                    nearest = field;
+                    nearest = fieldView;
                 }
             }
         }
@@ -348,7 +349,7 @@ export class Board {
         this.highlightFields(possibleQuietMoves, possibleCapturesOrCheck);
         return possibleQuietMoves.map(String);
     }
-    private calculatePossibleMovesForKnight(originField: Field): string[] { 
+    private calculatePossibleMovesForKnight(originField: Field): string[] {
 
         const originID = originField.getId();
 
