@@ -1,21 +1,25 @@
 // view/FieldView.ts
-import { Graphics, TextStyle, Text } from "pixi.js";
+import { Graphics, TextStyle, Text, Container } from "pixi.js";
 import { boardConfig } from "./boardConfig";
 
 export class FieldView {
 
+    private container: Container;
     private graphics: Graphics;
     private notationText?: Text;
     private idText?: Text;
 
     constructor(
-        public readonly id: number,
-        public readonly position: { x: number; y: number }, // for nearest-center snapping and for init pos of square on board/screen
+        private readonly id: number, // readonly does NOT make the object immutable so better getter
+        private readonly position: { x: number; y: number }, // for nearest-center snapping and for init pos of square on board/screen
         private size: number,
-        public readonly notationTextValue: string,
+        private readonly notationTextValue: string,
         private config: typeof boardConfig // temp ?
     ) {
+
+        this.container = new Container();
         this.graphics = new Graphics();
+        this.container.addChild(this.graphics);
         this.createText();
     }
 
@@ -55,6 +59,15 @@ export class FieldView {
             this.position.x + this.config.textFieldIdOffset.x,
             this.position.y + this.config.textFieldIdOffset.y
         );
+
+        this.container.addChild(
+            this.notationText,
+            this.idText
+        );
+    }
+
+    public getContainer(): Container {
+        return this.container;
     }
 
     public getGraphics(): Graphics {

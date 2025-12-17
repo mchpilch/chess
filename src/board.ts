@@ -100,17 +100,7 @@ export class Board {
                 rowLogical.push(field);
                 rowView.push(fieldView);
 
-                boardContainer.addChild(fieldView.getGraphics());
-
-                let notationTextValue2 = fieldView.getNotationText();
-                if (typeof notationTextValue2 !== 'undefined') {
-                    boardContainer.addChild(notationTextValue2);
-                }
-                let idTextValue2 = fieldView.getIdText();
-                if (typeof idTextValue2 !== 'undefined') {
-                boardContainer.addChild(idTextValue2);
-                }
-         
+                boardContainer.addChild(fieldView.getContainer());       
             }
             this.fields.push(rowLogical);
             this.fieldViews.push(rowView);
