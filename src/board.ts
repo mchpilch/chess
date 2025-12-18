@@ -100,7 +100,7 @@ export class Board {
                 rowLogical.push(field);
                 rowView.push(fieldView);
 
-                boardContainer.addChild(fieldView.getContainer());       
+                boardContainer.addChild(fieldView.getContainer());
             }
             this.fields.push(rowLogical);
             this.fieldViews.push(rowView);
@@ -384,29 +384,29 @@ export class Board {
 
         console.log('xxxxxxx possibleQuietMoves', possibleQuietMoves);
         console.log('xxxxxxx possibleCaptures', possibleCaptures);
-        const fillFieldWithColor = (field: Field, color: string) => {
-            let { x, y } = field.getPosition();
-            // console.log('xxx field', field.getNotation());
-            field.getGraphics().clear();
-            field.getGraphics().rect(x, y, this.config.squareWidth, this.config.squareWidth).fill(color);
+        const fillFieldWithColor = (fieldView: FieldView, color: string) => {
+
+            fieldView.draw(color);
         }
 
-        for (let row of this.fields) {
-            for (let field of row) {
+        for (let row of this.fieldViews) {
+            for (let fieldView of row) {
 
-                if (possibleQuietMoves.includes(field.getId())) {
+                if (possibleQuietMoves.includes(fieldView.getId())) {
 
-                    fillFieldWithColor(field, this.config.possibleMoveColorHighlight);
+                    fillFieldWithColor(fieldView, this.config.possibleMoveColorHighlight);
                 }
-
-                if (possibleCaptures.includes(field.getId())) {
+                let id = fieldView.getId();
+                let field = this.getFieldById(id);
+                if (possibleCaptures.includes(fieldView.getId())) {
                     console.log('xxx field.getOccupiedBy()?.getRole()', field.getOccupiedBy()?.getRole());
+
                     if (field.getOccupiedBy()?.getRole() === 'king') {
                         console.log('xxx check at field.getOccupiedBy()', field.getOccupiedBy());
-                        fillFieldWithColor(field, this.config.possibleCheckColorHighlight);
+                        fillFieldWithColor(fieldView, this.config.possibleCheckColorHighlight);
                     } else {
                         console.log('xxx capture at field.getOccupiedBy()', field.getOccupiedBy());
-                        fillFieldWithColor(field, this.config.captureColorHighlight);
+                        fillFieldWithColor(fieldView, this.config.captureColorHighlight);
                     }
 
                 }
@@ -417,16 +417,11 @@ export class Board {
 
     private turnOffHighlights(): void {
 
-        this.fields.forEach((row, rowIndex) => {
-            row.forEach((field, colIndex) => {
+        this.fieldViews.forEach((row, rowIndex) => {
+            row.forEach((fieldView, colIndex) => {
 
-                const { x, y } = field.getPosition();
-                // console.log("row:", rowIndex, "col:", colIndex, field.getNotation());
                 const color = (rowIndex + colIndex) % 2 === 0 ? this.config.colorDark : this.config.colorLight;
-                field.getGraphics().clear();
-                field.getGraphics()
-                    .rect(x, y, this.config.squareWidth, this.config.squareWidth)
-                    .fill(color);
+                fieldView.draw(color);
             });
         });
     }
