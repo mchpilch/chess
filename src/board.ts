@@ -153,7 +153,9 @@ export class Board {
     private handlePieceDragStarted({ pieceId, x, y }: { pieceId: number; x: number; y: number }): void {
         console.log(`handlePieceDragStarted id  ${pieceId}  x ${x} y ${y}`);
 
-        const originField = this.findNearestField(x, y);
+        const originFieldId = this.findNearestFieldId(x, y);
+        const originField = originFieldId ? this.getFieldById(originFieldId) : null;
+
         this.dragOriginField = originField;
         console.log(`handlePieceDragStarted originField ${originField?.getNotation()}`);
         if (originField === null) {
@@ -166,9 +168,10 @@ export class Board {
 
     private handlePieceDrop({ pieceId, x, y }: { pieceId: number; x: number; y: number }): void {
 
-        const nearest = this.findNearestField(x, y);
+        const nearestFieldId = this.findNearestFieldId(x, y);
+        const nearestField = nearestFieldId ? this.getFieldById(nearestFieldId) : null;
         this.turnOffHighlights();
-        if (!nearest) {
+        if (!nearestField) {
             this.dragOriginField = null;
             return;
         };
@@ -177,10 +180,10 @@ export class Board {
         // console.log(`xxxxx this.gameState.getCurrentTurn() ${this.gameState.getCurrentTurn()}`);
         // console.log(`xxxxx nearest.getOccupiedBy()?.getColor() === this.gameState.getCurrentTurn() ${nearest.getOccupiedBy()?.getColor() === this.gameState.getCurrentTurn()}`);
 
-        let isMoveToStartingSquare = nearest.getOccupiedBy()?.getId() === pieceId;
-        let isMoveToWrongColor = nearest.getOccupiedBy() !== null && nearest.getOccupiedBy()?.getColor() === this.gameState.getCurrentTurn();
-        let isMoveToEmptySquare = nearest.getOccupiedBy() === null;
-        let isMoveToEnemySquare = nearest.getOccupiedBy() !== null && nearest.getOccupiedBy()?.getColor() !== this.gameState.getCurrentTurn();
+        let isMoveToStartingSquare = nearestField.getOccupiedBy()?.getId() === pieceId;
+        let isMoveToWrongColor = nearestField.getOccupiedBy() !== null && nearestField.getOccupiedBy()?.getColor() === this.gameState.getCurrentTurn();
+        let isMoveToEmptySquare = nearestField.getOccupiedBy() === null;
+        let isMoveToEnemySquare = nearestField.getOccupiedBy() !== null && nearestField.getOccupiedBy()?.getColor() !== this.gameState.getCurrentTurn();
 
         if (isMoveToStartingSquare === true || isMoveToWrongColor === true) {
             if (this.dragOriginField === null) return;
@@ -190,14 +193,14 @@ export class Board {
         }
 
         if (isMoveToEmptySquare === true) {
-            this.movePiece(pieceId, nearest);
-            nearest.setOccupiedBy(this.findPieceById(pieceId));
+            this.movePiece(pieceId, nearestField);
+            nearestField.setOccupiedBy(this.findPieceById(pieceId));
         }
 
         if (isMoveToEnemySquare === true) { // here more rules will be added
-            nearest.getOccupiedBy()!.visible = false; // later: consider if this is enough or should it be rm from stage completely
-            this.movePiece(pieceId, nearest);
-            nearest.setOccupiedBy(this.findPieceById(pieceId));
+            nearestField.getOccupiedBy()!.visible = false; // later: consider if this is enough or should it be rm from stage completely
+            this.movePiece(pieceId, nearestField);
+            nearestField.setOccupiedBy(this.findPieceById(pieceId));
         }
 
         this.gameState.incrementMoveCount();
@@ -213,7 +216,7 @@ export class Board {
         // console.log('xxx this.gameState.getMoveCount()', this.gameState.getMoveCount());
     }
 
-    private findNearestField(px: number, py: number): FieldView | null {
+    private findNearestFieldId(px: number, py: number): number | null {
         let nearest: FieldView | null = null;
         let shortest = Infinity;
         for (const row of this.fieldViews) {
@@ -230,7 +233,7 @@ export class Board {
             }
         }
 
-        return nearest;
+        return nearest?.getId() || null;
     }
 
     private findPieceById(id: number): Piece | null {
