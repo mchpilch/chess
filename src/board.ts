@@ -49,6 +49,7 @@ export class Board {
     private config = boardConfig;
     private gameState !: GameState;
     private dragOriginField: Field | null = null;
+    private dragOriginFieldView: FieldView | null = null;
 
     constructor() {
 
@@ -57,6 +58,7 @@ export class Board {
         this.board = this.generateBoard();
         this.gameState = GameState.getInstance();
         this.dragOriginField = null;
+        this.dragOriginFieldView = null;
     }
 
     private generateBoard(): Container {
@@ -155,10 +157,13 @@ export class Board {
 
         const originFieldId = this.findNearestFieldId(x, y);
         const originField = originFieldId ? this.getFieldById(originFieldId) : null;
+        const originFieldView = originFieldId ? this.getFieldViewById(originFieldId) : null;
 
         this.dragOriginField = originField;
+        this.dragOriginFieldView = originFieldView;
+
         console.log(`handlePieceDragStarted originField ${originField?.getNotation()}`);
-        if (originField === null) {
+        if (originField === null || originFieldView === null) {
             console.log('originField is null');
             return;
         }
@@ -169,10 +174,20 @@ export class Board {
     private handlePieceDrop({ pieceId, x, y }: { pieceId: number; x: number; y: number }): void {
 
         const nearestFieldId = this.findNearestFieldId(x, y);
-        const nearestField = nearestFieldId ? this.getFieldById(nearestFieldId) : null;
-        this.turnOffHighlights();
-        if (!nearestField) {
+
+        if (nearestFieldId === null) {
             this.dragOriginField = null;
+            this.dragOriginFieldView = null;
+            return;
+        }
+
+        const nearestField = nearestFieldId ? this.getFieldById(nearestFieldId) : null;
+        const nearestFieldView = nearestFieldId ? this.getFieldViewById(nearestFieldId) : null;
+
+        this.turnOffHighlights();
+        if (!nearestField || !nearestFieldView) {
+            this.dragOriginField = null;
+            this.dragOriginFieldView = null;
             return;
         };
         // console.log(`xxxxx Piece with id ${pieceId} snaps to field ${nearest.getNotation()}`);
@@ -187,19 +202,19 @@ export class Board {
 
         if (isMoveToStartingSquare === true || isMoveToWrongColor === true) {
             if (this.dragOriginField === null) return;
-            this.movePiece(pieceId, this.dragOriginField);
+            this.movePiece(pieceId, this.dragOriginFieldView!); // deal later with "!"
             this.dragOriginField = null;
             return;
         }
 
         if (isMoveToEmptySquare === true) {
-            this.movePiece(pieceId, nearestField);
+            this.movePiece(pieceId, nearestFieldView);
             nearestField.setOccupiedBy(this.findPieceById(pieceId));
         }
 
         if (isMoveToEnemySquare === true) { // here more rules will be added
             nearestField.getOccupiedBy()!.visible = false; // later: consider if this is enough or should it be rm from stage completely
-            this.movePiece(pieceId, nearestField);
+            this.movePiece(pieceId, nearestFieldView);
             nearestField.setOccupiedBy(this.findPieceById(pieceId));
         }
 
@@ -426,7 +441,7 @@ export class Board {
         });
     }
 
-    private movePiece(pieceId: number, destination: Field): void { // set dragged piece in new position
+    private movePiece(pieceId: number, destination: FieldView): void { // set dragged piece in new position
         // Move the actual piece
         const piece = this.findPieceById(pieceId);
         if (piece) {
@@ -461,6 +476,11 @@ export class Board {
     private getFieldById(id: number): Field {
 
         return this.fields[7 - Math.floor(id / 8)][id % 8];
+    }
+
+    private getFieldViewById(id: number): FieldView {
+
+        return this.fieldViews[7 - Math.floor(id / 8)][id % 8];
     }
 
 }
