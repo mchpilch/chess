@@ -32,7 +32,7 @@ export class Piece extends Container {
   constructor(type: PieceType, color: "w" | "b", id: number) {
 
     super();
-    console.log('Piece constructor, type', type, color, id);
+
     this.init(type, color, id);
   }
 

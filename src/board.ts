@@ -246,13 +246,8 @@ export class Board {
                     shortest = distSq;
                     nearest = fieldView;
                 }
-                // console.log('xxx shortest', shortest);
-                // console.log('xxx nearest inside for', nearest?.getId());
-
             }
-            // console.log('xxx nearest inside for2', nearest?.getId());
         }
-        console.log('xxx nearest OUTSIDE ON RETURN', nearest?.getId());
         return nearest!.getId();
     }
 
@@ -366,17 +361,11 @@ export class Board {
 
         const originID = originField.getId();
 
-
-        console.log('xxx calculatePossibleMovesForKnight', originField);
-        console.log('xxx currentRow', (Math.floor(originID / 8)));
-        console.log('xxx currentFile', (originID % 8));
-
         let knightOffsets = [-17, -15, -10, -6, 6, 10, 15, 17];
         let possibleMovesPreBoundriesCheck = knightOffsets.map(offset => originID + offset);
-        console.log('xxx possibleMovesPreBoundriesCheck', possibleMovesPreBoundriesCheck);
         let possibleMovesPreWrappingCheck = possibleMovesPreBoundriesCheck.filter(id => id >= 0 && id < 64);
-        console.log('xxx possibleMovesPreWrappingCheck', possibleMovesPreWrappingCheck);
         const checkWrapping = (id: number) => {
+
             let originRow = this.getRowById(originID);
             let originFile = this.getFileById(originID);
 
@@ -386,13 +375,12 @@ export class Board {
             const rowDiff = Math.abs(currentIdsRow - originRow);
             const fileDiff = Math.abs(currentIdsFile - originFile);
 
-            if (rowDiff > 2 || fileDiff > 2) {
-                return false;
-            }
-            return true;
+            return (
+                (rowDiff === 2 && fileDiff === 1) ||
+                (rowDiff === 1 && fileDiff === 2)
+            );
         }
         let possibleMoves = possibleMovesPreWrappingCheck.filter(checkWrapping);
-        console.log('xxx possibleMoves', possibleMoves);
 
         const originColor = originField.getOccupiedBy()!.getColor();
 
@@ -422,30 +410,30 @@ export class Board {
 
     private highlightFields(possibleQuietMoves: number[], possibleCaptures: number[]): void {
 
-        // console.log('xxxxxxx possibleQuietMoves', possibleQuietMoves);
-        // console.log('xxxxxxx possibleCaptures', possibleCaptures);
         const fillFieldWithColor = (fieldView: FieldView, color: string) => {
 
             fieldView.draw(color);
         }
 
         for (let row of this.fieldViews) {
+
             for (let fieldView of row) {
 
                 if (possibleQuietMoves.includes(fieldView.getId())) {
 
                     fillFieldWithColor(fieldView, this.config.possibleMoveColorHighlight);
                 }
+
                 let id = fieldView.getId();
                 let field = this.getFieldById(id);
+
                 if (possibleCaptures.includes(fieldView.getId())) {
-                    // console.log('xxx field.getOccupiedBy()?.getRole()', field.getOccupiedBy()?.getRole());
 
                     if (field.getOccupiedBy()?.getRole() === 'king') {
-                        // console.log('xxx check at field.getOccupiedBy()', field.getOccupiedBy());
+
                         fillFieldWithColor(fieldView, this.config.possibleCheckColorHighlight);
                     } else {
-                        // console.log('xxx capture at field.getOccupiedBy()', field.getOccupiedBy());
+
                         fillFieldWithColor(fieldView, this.config.captureColorHighlight);
                     }
 
@@ -499,13 +487,12 @@ export class Board {
     public getFields(): Field[][] { return this.fields; }
 
     private getFieldById(id: number): Field {
-        // console.log('xxxccc getFieldById', id, this.fields[7 - Math.floor(id / 8)][id % 8]);
 
         return this.fields[7 - Math.floor(id / 8)][id % 8];
     }
 
     private getFieldViewById(id: number): FieldView {
-        // console.log('xxxccc getFieldViewById', id, this.fields[7 - Math.floor(id / 8)][id % 8]);
+
         return this.fieldViews[7 - Math.floor(id / 8)][id % 8];
     }
 
