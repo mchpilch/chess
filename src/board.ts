@@ -121,8 +121,6 @@ export class Board {
                 let piece = field.getOccupiedBy();
                 if (piece === null) continue;
 
-                // console.log('xxx field', field);
-
                 piece.onDragStarted.add(
                     new Listener<{ pieceId: number; x: number; y: number }>(
                         payload => this.handlePieceDragStarted(payload)
@@ -153,7 +151,6 @@ export class Board {
     }
 
     private handlePieceDragStarted({ pieceId, x, y }: { pieceId: number; x: number; y: number }): void {
-        // console.log(`handlePieceDragStarted id  ${pieceId}  x ${x} y ${y}`);
 
         const originFieldId = this.findNearestFieldId(x, y);
 
@@ -169,10 +166,7 @@ export class Board {
         this.dragOriginField = originField;
         this.dragOriginFieldView = originFieldView;
 
-        console.log(`handlePieceDragStarted originField ${originField?.getNotation()}`);
-
         this.calculatePossibleMoves(pieceId, originField);
-        // then show possible moves;
     }
 
     private handlePieceDrop({ pieceId, x, y }: { pieceId: number; x: number; y: number }): void {
@@ -191,11 +185,6 @@ export class Board {
 
         this.turnOffHighlights();
 
-        // console.log(`xxxxx Piece with id ${pieceId} snaps to field ${nearest.getNotation()}`);
-        // console.log(`xxxxx nearest.getOccupiedBy()?.getColor() ${nearest.getOccupiedBy()?.getColor()}`);
-        // console.log(`xxxxx this.gameState.getCurrentTurn() ${this.gameState.getCurrentTurn()}`);
-        // console.log(`xxxxx nearest.getOccupiedBy()?.getColor() === this.gameState.getCurrentTurn() ${nearest.getOccupiedBy()?.getColor() === this.gameState.getCurrentTurn()}`);
-
         let isMoveToStartingSquare = nearestField.getOccupiedBy()?.getId() === pieceId;
         let isMoveToWrongColor = nearestField.getOccupiedBy() !== null && nearestField.getOccupiedBy()?.getColor() === this.gameState.getCurrentTurn();
         let isMoveToEmptySquare = nearestField.getOccupiedBy() === null;
@@ -203,7 +192,7 @@ export class Board {
 
         if (isMoveToStartingSquare === true || isMoveToWrongColor === true) {
             if (this.dragOriginField === null) return;
-            this.movePiece(pieceId, this.dragOriginFieldView!); // deal later with "!"
+            this.movePiece(pieceId, this.dragOriginFieldView!); // "!"
             this.dragOriginField = null;
             return;
         }
@@ -227,9 +216,6 @@ export class Board {
 
         this.handleInteractivnessOfPiecesOnBoard();
         this.dragOriginField = null;
-
-        // console.log('xxx this.gameState.getCurrentTurn()', this.gameState.getCurrentTurn());
-        // console.log('xxx this.gameState.getMoveCount()', this.gameState.getMoveCount());
     }
 
     private findNearestFieldId(px: number, py: number): number | null {
@@ -262,13 +248,11 @@ export class Board {
     }
 
     private calculatePossibleMoves(pieceId: number, originField: Field): void {
+        
         let piece = this.findPieceById(pieceId);
 
-        // console.log('xxx piece', piece?.getRole(), piece?.getColor());
-        // console.log('xxx originField', originField?.getNotation(), originField?.getId());
-
         const role = piece!.getRole(); // ! 
-        // console.log('xxx role', role);
+
         let tempPossibleMovesAsNotation: string[] = [];
 
         if (role === 'r' || role === 'b' || role === 'q') {
@@ -294,7 +278,6 @@ export class Board {
     private calculatePossibleMovesForSlidingPiece(originField: Field, pieceType: SlidingPiece): string[] { // decided to not include king as it behaves differently then other pieces in terms of checks
 
         const originID = originField.getId();
-        // console.log('xxx calculatePossibleMovesForSlidingPiece', originField, pieceType);
 
         if (originID === null) return [];
 
@@ -318,7 +301,7 @@ export class Board {
 
                 // NW (+7) and SW (-9) - moving left - wrap when file = 7
                 if ((offset === 7 || offset === -9) && id % 8 === 7) { // If  moving left (file - 1), the only way to land on file 7 is if  jumped across the board - illegal so break
-                    // console.log('xxx id', id);
+
                     break;
                 }
 

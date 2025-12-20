@@ -46,8 +46,6 @@ export class Game {
         // setup managers
         this.app = gameInitData.app;
         this.gameState = GameState.getInstance();
-        // console.log('this.app', this.app);
-
 
         // const fenParser = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
         // const fenParser = new FenParser('r1bk3r/p2pBpNp/n4n2/1p1NP2P/6P1/3P4/P1P1K3/q5b1 w KQkq - 0 1');

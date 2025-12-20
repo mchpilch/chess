@@ -113,8 +113,6 @@ export class Piece extends Container {
       y: this.y
     });
 
-    // console.log('xxx stage', stage);
-
     stage?.on("pointermove", this.onDragMove, this);
   }
 

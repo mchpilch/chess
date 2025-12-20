@@ -29,7 +29,6 @@ export class FenParser {
 
         const parts = fenPosition.split(' ')
 
-        // console.log('xxxx parts', parts);
         if (parts.length !== 6) {
             throw new Error('Invalid FEN string - wrong number of segments');
         }
