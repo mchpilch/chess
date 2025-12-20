@@ -121,7 +121,7 @@ export class Board {
                 let piece = field.getOccupiedBy();
                 if (piece === null) continue;
 
-                console.log('xxx field', field);
+                // console.log('xxx field', field);
 
                 piece.onDragStarted.add(
                     new Listener<{ pieceId: number; x: number; y: number }>(
@@ -153,20 +153,24 @@ export class Board {
     }
 
     private handlePieceDragStarted({ pieceId, x, y }: { pieceId: number; x: number; y: number }): void {
-        console.log(`handlePieceDragStarted id  ${pieceId}  x ${x} y ${y}`);
+        // console.log(`handlePieceDragStarted id  ${pieceId}  x ${x} y ${y}`);
 
         const originFieldId = this.findNearestFieldId(x, y);
-        const originField = originFieldId ? this.getFieldById(originFieldId) : null;
-        const originFieldView = originFieldId ? this.getFieldViewById(originFieldId) : null;
+
+        if (originFieldId === null) {
+            this.dragOriginField = null;
+            this.dragOriginFieldView = null;
+            return;
+        }
+
+        const originField = this.getFieldById(originFieldId);
+        const originFieldView = this.getFieldViewById(originFieldId);
 
         this.dragOriginField = originField;
         this.dragOriginFieldView = originFieldView;
 
         console.log(`handlePieceDragStarted originField ${originField?.getNotation()}`);
-        if (originField === null || originFieldView === null) {
-            console.log('originField is null');
-            return;
-        }
+
         this.calculatePossibleMoves(pieceId, originField);
         // then show possible moves;
     }
@@ -176,20 +180,17 @@ export class Board {
         const nearestFieldId = this.findNearestFieldId(x, y);
 
         if (nearestFieldId === null) {
+            
             this.dragOriginField = null;
             this.dragOriginFieldView = null;
             return;
         }
 
-        const nearestField = nearestFieldId ? this.getFieldById(nearestFieldId) : null;
-        const nearestFieldView = nearestFieldId ? this.getFieldViewById(nearestFieldId) : null;
+        const nearestField = this.getFieldById(nearestFieldId)
+        const nearestFieldView = this.getFieldViewById(nearestFieldId)
 
         this.turnOffHighlights();
-        if (!nearestField || !nearestFieldView) {
-            this.dragOriginField = null;
-            this.dragOriginFieldView = null;
-            return;
-        };
+
         // console.log(`xxxxx Piece with id ${pieceId} snaps to field ${nearest.getNotation()}`);
         // console.log(`xxxxx nearest.getOccupiedBy()?.getColor() ${nearest.getOccupiedBy()?.getColor()}`);
         // console.log(`xxxxx this.gameState.getCurrentTurn() ${this.gameState.getCurrentTurn()}`);
@@ -245,10 +246,14 @@ export class Board {
                     shortest = distSq;
                     nearest = fieldView;
                 }
-            }
-        }
+                // console.log('xxx shortest', shortest);
+                // console.log('xxx nearest inside for', nearest?.getId());
 
-        return nearest?.getId() || null;
+            }
+            // console.log('xxx nearest inside for2', nearest?.getId());
+        }
+        console.log('xxx nearest OUTSIDE ON RETURN', nearest?.getId());
+        return nearest!.getId();
     }
 
     private findPieceById(id: number): Piece | null {
@@ -264,11 +269,11 @@ export class Board {
     private calculatePossibleMoves(pieceId: number, originField: Field): void {
         let piece = this.findPieceById(pieceId);
 
-        console.log('xxx piece', piece?.getRole(), piece?.getColor());
-        console.log('xxx originField', originField?.getNotation(), originField?.getId());
+        // console.log('xxx piece', piece?.getRole(), piece?.getColor());
+        // console.log('xxx originField', originField?.getNotation(), originField?.getId());
 
         const role = piece!.getRole(); // ! 
-        console.log('xxx role', role);
+        // console.log('xxx role', role);
         let tempPossibleMovesAsNotation: string[] = [];
 
         if (role === 'r' || role === 'b' || role === 'q') {
@@ -294,7 +299,7 @@ export class Board {
     private calculatePossibleMovesForSlidingPiece(originField: Field, pieceType: SlidingPiece): string[] { // decided to not include king as it behaves differently then other pieces in terms of checks
 
         const originID = originField.getId();
-        console.log('xxx calculatePossibleMovesForSlidingPiece', originField, pieceType);
+        // console.log('xxx calculatePossibleMovesForSlidingPiece', originField, pieceType);
 
         if (originID === null) return [];
 
@@ -318,7 +323,7 @@ export class Board {
 
                 // NW (+7) and SW (-9) - moving left - wrap when file = 7
                 if ((offset === 7 || offset === -9) && id % 8 === 7) { // If  moving left (file - 1), the only way to land on file 7 is if  jumped across the board - illegal so break
-                    console.log('xxx id', id);
+                    // console.log('xxx id', id);
                     break;
                 }
 
@@ -361,7 +366,7 @@ export class Board {
 
         const originID = originField.getId();
 
-        console.log('xxx calculatePossibleMovesForKnight', originField);
+        // console.log('xxx calculatePossibleMovesForKnight', originField);
 
         if (originID === null) return [];
         let knightOffsets = [-17, -15, -10, -6, 6, 10, 15, 17];
@@ -397,8 +402,8 @@ export class Board {
 
     private highlightFields(possibleQuietMoves: number[], possibleCaptures: number[]): void {
 
-        console.log('xxxxxxx possibleQuietMoves', possibleQuietMoves);
-        console.log('xxxxxxx possibleCaptures', possibleCaptures);
+        // console.log('xxxxxxx possibleQuietMoves', possibleQuietMoves);
+        // console.log('xxxxxxx possibleCaptures', possibleCaptures);
         const fillFieldWithColor = (fieldView: FieldView, color: string) => {
 
             fieldView.draw(color);
@@ -414,13 +419,13 @@ export class Board {
                 let id = fieldView.getId();
                 let field = this.getFieldById(id);
                 if (possibleCaptures.includes(fieldView.getId())) {
-                    console.log('xxx field.getOccupiedBy()?.getRole()', field.getOccupiedBy()?.getRole());
+                    // console.log('xxx field.getOccupiedBy()?.getRole()', field.getOccupiedBy()?.getRole());
 
                     if (field.getOccupiedBy()?.getRole() === 'king') {
-                        console.log('xxx check at field.getOccupiedBy()', field.getOccupiedBy());
+                        // console.log('xxx check at field.getOccupiedBy()', field.getOccupiedBy());
                         fillFieldWithColor(fieldView, this.config.possibleCheckColorHighlight);
                     } else {
-                        console.log('xxx capture at field.getOccupiedBy()', field.getOccupiedBy());
+                        // console.log('xxx capture at field.getOccupiedBy()', field.getOccupiedBy());
                         fillFieldWithColor(fieldView, this.config.captureColorHighlight);
                     }
 
@@ -474,12 +479,13 @@ export class Board {
     public getFields(): Field[][] { return this.fields; }
 
     private getFieldById(id: number): Field {
+        // console.log('xxxccc getFieldById', id, this.fields[7 - Math.floor(id / 8)][id % 8]);
 
         return this.fields[7 - Math.floor(id / 8)][id % 8];
     }
 
     private getFieldViewById(id: number): FieldView {
-
+        // console.log('xxxccc getFieldViewById', id, this.fields[7 - Math.floor(id / 8)][id % 8]);
         return this.fieldViews[7 - Math.floor(id / 8)][id % 8];
     }
 
