@@ -1,68 +1,74 @@
 import { Assets, Container, Sprite, FederatedPointerEvent, Graphics, Rectangle } from "pixi.js";
 import { Signal } from "./signal";
 import { GameState } from "./gameState";
-import { pieceConfig } from "./Pieces/pieceConfig";
+import { pieceConfig } from "./pieces/pieceConfig";
 import { boardConfig } from "./boardConfig";
+import { Piece } from "./domain/piece";
 
-const roleMap = {
-  king: 'k',
-  queen: 'q',
-  rook: 'r',
-  bishop: 'b',
-  knight: 'n',
-  pawn: 'p',
+
+type Role = "k" | "q" | "r" | "b" | "n" | "p";
+
+const roleToName: Record<Role, string> = {
+  k: "king",
+  q: "queen",
+  r: "rook",
+  b: "bishop",
+  n: "knight",
+  p: "pawn",
 };
-type PieceType = keyof typeof roleMap; // so king, queen, etc.
-type Role = typeof roleMap[PieceType]; // so k, q, etc.
 
-export class Piece extends Container {
+export class PieceView extends Container {
 
-  private id!: number;
+  private piece!: Piece;
+  
   private dragging!: boolean;// for reasurrance variable
   public onDragStarted!: Signal<{ pieceId: number, x: number, y: number }>;
   public onDropped!: Signal<{ pieceId: number, x: number, y: number }>;
-  private color!: "w" | "b";
-  private role!: Role;
 
-  private key!: string;
   private gameState!: GameState;
   private config !: typeof pieceConfig;
   private boardConfig !: typeof boardConfig;
 
-  constructor(type: PieceType, color: "w" | "b", id: number) {
+  constructor(piece: Piece) {
 
     super();
 
-    this.init(type, color, id);
+    this.init(piece);
   }
 
-  private init(type: PieceType, color: "w" | "b", id: number) {
+  private init(piece: Piece) {
 
     // Managers
     this.gameState = GameState.getInstance();
     this.config = pieceConfig;
     this.boardConfig = boardConfig;
+
+    this.piece = piece;
     // Atributers
-    this.id = id;
-    this.color = color;
-
-
-    this.role = roleMap[type];// as 'r' | 'n' | 'b' | 'q' | 'k' | 'p'; // improve later 
-    const key = `${type}-${color}`;
-    this.key = key;
+    const roleName = roleToName[this.piece.getRole()];
+    const key = `${roleName}-${this.piece.getColor()}`;
 
     const texture = Assets.get(key);
     const sprite = new Sprite(texture); // in future can be spine or movieclip if i want my pieces animated
     sprite.anchor.set(this.config.pieceAnchor);
     sprite.scale.set(this.config.pieceScale); // 2 - 300, 1 - 150, 0.5  - 75
 
-    let transparentBackground = new Graphics().rect(  // Bg to visualize hit area
-      -this.boardConfig.squareWidth / 2, -this.boardConfig.squareWidth / 2, this.boardConfig.squareWidth, this.boardConfig.squareWidth
-    ).fill(this.config.pieceHighlightColor);
+    let transparentBackground = new Graphics()
+      .rect(  // Bg to visualize hit area
+        -this.boardConfig.squareWidth / 2, -this.boardConfig.squareWidth / 2, this.boardConfig.squareWidth, this.boardConfig.squareWidth
+      ).fill(this.config.pieceHighlightColor);
+
     transparentBackground.alpha = this.config.pieceBgAlpha;
+
     this.addChild(transparentBackground);
     this.addChild(sprite);
-    this.hitArea = new Rectangle(-this.boardConfig.squareWidth / 2, -this.boardConfig.squareWidth / 2, this.boardConfig.squareWidth, this.boardConfig.squareWidth);
+
+    this.hitArea = new Rectangle(
+      -this.boardConfig.squareWidth / 2,
+      -this.boardConfig.squareWidth / 2,
+      this.boardConfig.squareWidth,
+      this.boardConfig.squareWidth
+    );
 
     // Events and listeners
     this.onDragStarted = new Signal<{ pieceId: number, x: number, y: number }>();
@@ -71,7 +77,7 @@ export class Piece extends Container {
     // Flags
     this.dragging = false;
 
-    if (this.gameState.getCurrentTurn() === this.color) { // 1st move is W
+    if (this.gameState.getCurrentTurn() === this.piece.getColor()) { // 1st move is W
 
       this.eventMode = 'dynamic';     // enable the piece to be interactive... this will allow it to respond to mouse and touch events - from https://pixijs.com/7.x/examples/events/dragging
     }
@@ -101,14 +107,11 @@ export class Piece extends Container {
       parentPos.x,
       parentPos.y,
     );
-    // For now (2025-11-05): 
-    // The parent of each Piece is the PIXI stage, since pieces are added directly to it in Game.ts.
-    // The Board class only defines layout positions via the FEN parser — it does not own or contain the piece instances.
-    // (later make board container and handle that)
+
     const stage = this.parent;
 
     this.onDragStarted.fire({
-      pieceId: this.id,
+      pieceId: this.piece.getId(),
       x: this.x,
       y: this.y
     });
@@ -138,24 +141,18 @@ export class Piece extends Container {
 
     // Fire the signal
     this.onDropped.fire({
-      pieceId: this.id,
+      pieceId: this.piece.getId(),
       x: this.x,
       y: this.y
     });
   }
 
   public getId(): number {
-    return this.id;
-  }
-  public getColor(): string {
-    return this.color;
-  }
-  public getRole(): string {
-    return this.role;
+    return this.piece.getId();
   }
 
-  public getKey(): string {
-    return this.key;
+  public getPiece(): Piece {
+    return this.piece;
   }
 
 }

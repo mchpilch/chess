@@ -1,10 +1,11 @@
 import { Container, ContainerChild, Graphics, Text, TextStyle } from "pixi.js";
 import { boardConfig } from "./boardConfig";
-import { Piece } from "./piece";
+import { PieceView } from "./pieceView";
 import { Field } from "./field";
 import { Listener } from "./listener";
 import { GameState } from "./gameState";
 import { FieldView } from "./fieldView";
+import { Piece } from "./domain/piece";
 
 type SlidingPiece = 'r' | 'b' | 'q';
 
@@ -44,7 +45,8 @@ export class Board {
     private board!: Container;
 
     private fields!: Field[][]; // logical
-    private fieldViews!: FieldView[][]; // pixi rendering
+    private fieldViews!: FieldView[][]; // pixi rendering // later move to boardView 
+    private pieceViews = new Map<number, PieceView>(); // pixi rendering // later move to boardView 
 
     private config = boardConfig;
     private gameState !: GameState;
@@ -70,11 +72,10 @@ export class Board {
             let rowLogical = [];
             let rowView = [];
             for (let f = 0; f < this.config.numberOfFiles; f++) {
-                // for field and fieldView
+             
                 const id = this.config.numberOfRows * (this.config.numberOfRows - r - 1) + f; // improved id calc so a1 corresponds to 0 a2 to 1 and so on
-                // for field 
                 const notation = `${String.fromCharCode(97 + f)}${this.config.numberOfRows - r}`; // a1..h8 // 97 is a lowercase "a" // files got letters while rows have numbers
-                const occupiedBy: Piece | null = null;
+                const occupiedBy: PieceView | null = null;
 
                 const field = new Field(
                     id,
@@ -120,14 +121,19 @@ export class Board {
 
                 let piece = field.getOccupiedBy();
                 if (piece === null) continue;
+                let pieceId = piece.getId();
 
-                piece.onDragStarted.add(
+                let pieceView = this.getPieceViewById(pieceId);
+
+                if (typeof pieceView === 'undefined') continue;
+
+                pieceView.onDragStarted.add(
                     new Listener<{ pieceId: number; x: number; y: number }>(
                         payload => this.handlePieceDragStarted(payload)
                     )
                 );
 
-                piece.onDropped.add(
+                pieceView.onDropped.add(
                     new Listener<{ pieceId: number; x: number; y: number }>(
                         payload => this.handlePieceDrop(payload)
                     )
@@ -135,19 +141,6 @@ export class Board {
             }
         }
 
-    }
-
-    public getPiecesFromFields(): (Piece | null)[][] {
-        const pieceBoard: (Piece | null)[][] = [];
-
-        for (const row of this.fields) {
-            const pieceRow: (Piece | null)[] = [];
-            for (const field of row) {
-                pieceRow.push(field.getOccupiedBy());
-            }
-            pieceBoard.push(pieceRow);
-        }
-        return pieceBoard;
     }
 
     private handlePieceDragStarted({ pieceId, x, y }: { pieceId: number; x: number; y: number }): void {
@@ -203,7 +196,10 @@ export class Board {
         }
 
         if (isMoveToEnemySquare === true) { // here more rules will be added
-            nearestField.getOccupiedBy()!.visible = false; // later: consider if this is enough or should it be rm from stage completely
+            let piece = nearestField.getOccupiedBy()!;
+            let pieceView = this.getPieceViewById(piece.getId())!;
+            pieceView.visible = false; // later: consider if this is enough or should it be rm from stage completely
+
             this.movePiece(pieceId, nearestFieldView);
             nearestField.setOccupiedBy(this.findPieceById(pieceId));
         }
@@ -237,7 +233,7 @@ export class Board {
         return nearest!.getId();
     }
 
-    private findPieceById(id: number): Piece | null {
+    private findPieceById(id: number): Piece | null { // ???
         for (const row of this.fields) {
             for (const field of row) {
                 const piece = field.getOccupiedBy();
@@ -248,7 +244,7 @@ export class Board {
     }
 
     private calculatePossibleMoves(pieceId: number, originField: Field): void {
-        
+
         let piece = this.findPieceById(pieceId);
 
         const role = piece!.getRole(); // ! 
@@ -412,7 +408,7 @@ export class Board {
 
                 if (possibleCaptures.includes(fieldView.getId())) {
 
-                    if (field.getOccupiedBy()?.getRole() === 'king') {
+                    if (field.getOccupiedBy()?.getRole() === 'k') {
 
                         fillFieldWithColor(fieldView, this.config.possibleCheckColorHighlight);
                     } else {
@@ -439,9 +435,10 @@ export class Board {
 
     private movePiece(pieceId: number, destination: FieldView): void { // set dragged piece in new position
         // Move the actual piece
-        const piece = this.findPieceById(pieceId);
-        if (piece) {
-            piece.position.set(
+        const pieceView = this.getPieceViewById(pieceId);
+
+        if (pieceView) {
+            pieceView.position.set(
                 destination.getPosition().x + this.config.squareWidth / 2, // cause anchor of square is not in the middle
                 destination.getPosition().y + this.config.squareWidth / 2
             );
@@ -455,12 +452,16 @@ export class Board {
             for (const field of row) {
 
                 const piece = field.getOccupiedBy();
+
                 if (piece === null) continue;
 
+                const pieceView = this.getPieceViewById(piece.getId())!; // "!"
+
                 if (this.gameState.getCurrentTurn() === piece.getColor()) {
-                    piece.eventMode = 'dynamic';
+
+                    pieceView.eventMode = 'dynamic';
                 } else {
-                    piece.eventMode = 'none';
+                    pieceView.eventMode = 'none';
                 }
 
             }
@@ -468,6 +469,8 @@ export class Board {
     }
 
     public getFields(): Field[][] { return this.fields; }
+
+    public getFieldViews(): FieldView[][] { return this.fieldViews; }
 
     private getFieldById(id: number): Field {
 
@@ -488,5 +491,17 @@ export class Board {
 
         return (id % 8)
     }
+
+    public addPieceView(pieceView: PieceView) {
+
+        this.pieceViews.set(pieceView.getId(), pieceView);
+    }
+
+    private getPieceViewById(id: number): PieceView | undefined {
+
+        return this.pieceViews.get(id);
+    }
+
+
 
 }
