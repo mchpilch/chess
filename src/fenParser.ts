@@ -43,7 +43,7 @@ export class FenParser {
     }
 
     private parseBoard(notation: string): FenBoard {
-
+        // possibilty of missing support for dash (-) for Castling Availability when neither side can castle anymore (3rd Field) and En Passant Target Square (4th Field)
         let board: FenBoard = [];
 
         for (let i = 0; i < 8; i++) {

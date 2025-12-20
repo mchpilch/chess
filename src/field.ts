@@ -21,15 +21,15 @@ export class Field {
         this.occupiedBy = piece;
     }
 
-    public getOccupiedBy() {
+    public getOccupiedBy(): Piece | null {
         return this.occupiedBy;
     }
 
-    public getNotation() {
+    public getNotation(): string {
         return this.notation;
     }
 
-    public getId() {
+    public getId(): number {
         return this.id;
     }
 }

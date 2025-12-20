@@ -180,7 +180,7 @@ export class Board {
         const nearestFieldId = this.findNearestFieldId(x, y);
 
         if (nearestFieldId === null) {
-            
+
             this.dragOriginField = null;
             this.dragOriginFieldView = null;
             return;
@@ -366,13 +366,33 @@ export class Board {
 
         const originID = originField.getId();
 
-        // console.log('xxx calculatePossibleMovesForKnight', originField);
 
-        if (originID === null) return [];
+        console.log('xxx calculatePossibleMovesForKnight', originField);
+        console.log('xxx currentRow', (Math.floor(originID / 8)));
+        console.log('xxx currentFile', (originID % 8));
+
         let knightOffsets = [-17, -15, -10, -6, 6, 10, 15, 17];
         let possibleMovesPreBoundriesCheck = knightOffsets.map(offset => originID + offset);
-        let possibleMoves = possibleMovesPreBoundriesCheck.filter(id => id >= 0 && id < 64);
+        console.log('xxx possibleMovesPreBoundriesCheck', possibleMovesPreBoundriesCheck);
+        let possibleMovesPreWrappingCheck = possibleMovesPreBoundriesCheck.filter(id => id >= 0 && id < 64);
+        console.log('xxx possibleMovesPreWrappingCheck', possibleMovesPreWrappingCheck);
+        const checkWrapping = (id: number) => {
+            let originRow = this.getRowById(originID);
+            let originFile = this.getFileById(originID);
 
+            let currentIdsRow = this.getRowById(id);
+            let currentIdsFile = this.getFileById(id);
+
+            const rowDiff = Math.abs(currentIdsRow - originRow);
+            const fileDiff = Math.abs(currentIdsFile - originFile);
+
+            if (rowDiff > 2 || fileDiff > 2) {
+                return false;
+            }
+            return true;
+        }
+        let possibleMoves = possibleMovesPreWrappingCheck.filter(checkWrapping);
+        console.log('xxx possibleMoves', possibleMoves);
 
         const originColor = originField.getOccupiedBy()!.getColor();
 
@@ -487,6 +507,16 @@ export class Board {
     private getFieldViewById(id: number): FieldView {
         // console.log('xxxccc getFieldViewById', id, this.fields[7 - Math.floor(id / 8)][id % 8]);
         return this.fieldViews[7 - Math.floor(id / 8)][id % 8];
+    }
+
+    private getRowById(id: number): number {
+
+        return (Math.floor(id / 8))
+    }
+
+    private getFileById(id: number): number {
+
+        return (id % 8)
     }
 
 }
