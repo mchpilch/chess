@@ -1,5 +1,5 @@
 import { Container, ContainerChild, Graphics, Text, TextStyle } from "pixi.js";
-import { boardConfig } from "./boardConfig";
+import { boardConfig } from "./configs/boardConfig";
 import { PieceView } from "./pieceView";
 import { Field } from "./field";
 import { Listener } from "./listener";
@@ -233,13 +233,15 @@ export class Board {
         return nearest!.getId();
     }
 
-    private findPieceById(id: number): Piece | null { // ???
+    private findPieceById(id: number): Piece | null { 
+        
         for (const row of this.fields) {
             for (const field of row) {
                 const piece = field.getOccupiedBy();
                 if (piece && piece.getId() === id) return piece;
             }
         }
+
         return null;
     }
 
@@ -501,7 +503,4 @@ export class Board {
 
         return this.pieceViews.get(id);
     }
-
-
-
 }

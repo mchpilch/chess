@@ -1,8 +1,8 @@
 import { Assets, Container, Sprite, FederatedPointerEvent, Graphics, Rectangle } from "pixi.js";
 import { Signal } from "./signal";
 import { GameState } from "./gameState";
-import { pieceConfig } from "./pieces/pieceConfig";
-import { boardConfig } from "./boardConfig";
+import { pieceConfig } from "./configs/pieceConfig";
+import { boardConfig } from "./configs/boardConfig";
 import { Piece } from "./domain/piece";
 
 
@@ -20,7 +20,7 @@ const roleToName: Record<Role, string> = {
 export class PieceView extends Container {
 
   private piece!: Piece;
-  
+
   private dragging!: boolean;// for reasurrance variable
   public onDragStarted!: Signal<{ pieceId: number, x: number, y: number }>;
   public onDropped!: Signal<{ pieceId: number, x: number, y: number }>;

@@ -1,6 +1,6 @@
 // view/FieldView.ts
 import { Graphics, TextStyle, Text, Container } from "pixi.js";
-import { boardConfig } from "./boardConfig";
+import { boardConfig } from "./configs/boardConfig";
 
 export class FieldView {
 

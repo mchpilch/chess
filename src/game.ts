@@ -4,7 +4,7 @@ import { Application } from 'pixi.js';
 import { FenParser } from './fenParser';
 import { Board } from './board';
 import { GameState } from './gameState';
-import { boardConfig } from "./boardConfig";
+import { boardConfig } from "./configs/boardConfig";
 import { PieceFactory } from './pieceFactory';
 type GameInitData = {
     app: Application,
