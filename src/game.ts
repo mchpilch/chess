@@ -6,6 +6,7 @@ import { Board } from './board';
 import { GameState } from './gameState';
 import { boardConfig } from "./configs/boardConfig";
 import { PieceFactory } from './pieceFactory';
+import { BoardView } from './views/boardView';
 type GameInitData = {
     app: Application,
 };
@@ -18,6 +19,7 @@ export class Game {
     private app!: Application;
     // private fenParser!: FenParser;
     private board!: Board;
+    private boardView!: BoardView;
     private gameState!: GameState;
     private boardConfig = boardConfig;
 
@@ -59,10 +61,11 @@ export class Game {
         const fenBoard = fenParser.getFenBoard();
         const piecefactory = new PieceFactory();
 
-        this.board = new Board();
-        this.app.stage.interactive = true;
-        this.app.stage.addChild(this.board.getBoard()); // adds actual board to scene - the background for the game
+        this.boardView = new BoardView();
+        this.board = new Board(this.boardView);
 
+        this.app.stage.interactive = true;
+        this.app.stage.addChild(this.boardView.getBoard());
         const offsetX = boardConfig.offset.x;
         const offsetY = boardConfig.offset.y;
 
@@ -80,7 +83,7 @@ export class Game {
                     );
 
                     this.board.getFields()[i][j].setOccupiedBy(piece);
-                    this.board.addPieceView(pieceView);
+                    this.boardView.addPieceView(pieceView); //should be boardView?
 
                     this.app.stage.addChild(pieceView);
                 }
