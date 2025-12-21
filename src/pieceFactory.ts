@@ -1,5 +1,5 @@
 import { Piece } from "./domain/piece";
-import { PieceView } from "./pieceView";
+import { PieceView } from "./views/pieceView";
 
 type PieceKey = 'r' | 'n' | 'b' | 'q' | 'k' | 'p';
 type Color = 'w' | 'b';

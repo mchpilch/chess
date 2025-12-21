@@ -1,11 +1,11 @@
-import { Container, ContainerChild, Graphics, Text, TextStyle } from "pixi.js";
+import { Container} from "pixi.js";
 import { boardConfig } from "./configs/boardConfig";
-import { PieceView } from "./pieceView";
-import { Field } from "./field";
-import { Listener } from "./listener";
+import { PieceView } from "./views/pieceView";
+import { Listener } from "./events/listener";
 import { GameState } from "./gameState";
-import { FieldView } from "./fieldView";
+import { FieldView } from "./views/fieldView";
 import { Piece } from "./domain/piece";
+import { Field } from "./domain/field";
 
 type SlidingPiece = 'r' | 'b' | 'q';
 

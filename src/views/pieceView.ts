@@ -1,9 +1,9 @@
 import { Assets, Container, Sprite, FederatedPointerEvent, Graphics, Rectangle } from "pixi.js";
-import { Signal } from "./signal";
-import { GameState } from "./gameState";
-import { pieceConfig } from "./configs/pieceConfig";
-import { boardConfig } from "./configs/boardConfig";
-import { Piece } from "./domain/piece";
+import { GameState } from "../gameState";
+import { Piece } from "../domain/piece";
+import { Signal } from "../events/signal";
+import { pieceConfig } from "../configs/pieceConfig";
+import { boardConfig } from "../configs/boardConfig";
 
 
 type Role = "k" | "q" | "r" | "b" | "n" | "p";

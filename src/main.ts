@@ -1,6 +1,6 @@
 import { Application, Assets } from 'pixi.js';
 import { Game } from './game';
-import { assetsManifest } from './assetsManifest';
+import { assetsManifest } from './loaders/assetsManifest';
 // import { AssetsLoader } from './Core/assetsLoader';
 
 (async () => {

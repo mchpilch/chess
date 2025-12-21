@@ -1,4 +1,4 @@
-import { Listener } from "./listener";
+import { Listener } from "./events/listener";
 
 export class Signal<T = void> { // default type void
 

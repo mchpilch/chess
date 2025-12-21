@@ -1,7 +1,7 @@
 
 
 import { Application } from 'pixi.js';
-import { FenParser } from './fenParser';
+import { FenParser } from './domain/fenParser';
 import { Board } from './board';
 import { GameState } from './gameState';
 import { boardConfig } from "./configs/boardConfig";

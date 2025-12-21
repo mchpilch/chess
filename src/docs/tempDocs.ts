@@ -42,3 +42,5 @@
 // https://refactoring.guru/design-patterns/factory-method #pieceFactory
 
 // #Parameter Properties 
+
+// dir and files structure windows command -> tree /f
