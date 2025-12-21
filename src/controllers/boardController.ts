@@ -12,7 +12,7 @@ import { BoardState } from "../domain/boardState";
  * Board - class responsible for controlling flow. Orchestrator. 
  * Merges boardView, boardState and MoveGeneration by calling subslasses.
 */
-export class BoardController { 
+export class BoardController {
 
     private fields!: Field[][];
     private boardView !: BoardView;
@@ -23,7 +23,7 @@ export class BoardController {
 
     private dragOriginField: Field | null = null;
     private dragOriginFieldView: FieldView | null = null;
-    
+
     private config = boardConfig;
 
     constructor(boardView: BoardView) {
@@ -33,10 +33,10 @@ export class BoardController {
 
         this.boardState = new BoardState(this.fields);
         this.moveGenerator = new MoveGenerator(this.boardState); // passing reference to this.fields that later are mutated
-        
+
         this.boardView = boardView;
         this.gameState = GameState.getInstance();
-        
+
         this.dragOriginField = null;
         this.dragOriginFieldView = null;
     }
@@ -132,7 +132,6 @@ export class BoardController {
 
         let isMoveToStartingSquare = nearestField.getOccupiedBy()?.getId() === pieceId;
         let isMoveToWrongColor = nearestField.getOccupiedBy() !== null && nearestField.getOccupiedBy()?.getColor() === this.gameState.getCurrentTurn();
-        let isMoveToEmptySquare = nearestField.getOccupiedBy() === null;
         let isMoveToEnemySquare = nearestField.getOccupiedBy() !== null && nearestField.getOccupiedBy()?.getColor() !== this.gameState.getCurrentTurn();
 
         if (isMoveToStartingSquare === true || isMoveToWrongColor === true) {
@@ -142,23 +141,18 @@ export class BoardController {
             return;
         }
 
-        if (isMoveToEmptySquare === true) {
-            this.movePiece(pieceId, nearestFieldView);
-            nearestField.setOccupiedBy(this.findPieceById(pieceId));
-        }
-
         if (isMoveToEnemySquare === true) { // here more rules will be added
             let piece = nearestField.getOccupiedBy()!;
             let pieceView = this.boardView.getPieceViewById(piece.getId())!;
             pieceView.visible = false; // later: consider if this is enough or should it be rm from stage completely
-
-            this.movePiece(pieceId, nearestFieldView);
-            nearestField.setOccupiedBy(this.findPieceById(pieceId));
         }
+
+        this.movePiece(pieceId, nearestFieldView);
+        nearestField.setOccupiedBy(this.findPieceById(pieceId));
+        nearestField.getOccupiedBy()?.markMoved(); // "?"
 
         this.gameState.incrementMoveCount();
         this.gameState.setNextTurn();
-
 
         this.dragOriginField?.setOccupiedBy(null);
 
@@ -207,7 +201,6 @@ export class BoardController {
                 destination.getPosition().x + this.config.squareWidth / 2, // cause anchor of square is not in the middle
                 destination.getPosition().y + this.config.squareWidth / 2
             );
-
         }
     }
 

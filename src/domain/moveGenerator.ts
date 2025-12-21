@@ -63,6 +63,10 @@ export class MoveGenerator {
             return this.calculatePossibleMovesForKnight(originField);
         }
 
+        if (role === 'p') {
+            return this.calculatePossibleMovesForPawn(originField);
+        }
+
         console.warn(`Move calculation not implemented for role: ${role}`);
         return { quietMoves: [], captures: [] };
     }
@@ -169,6 +173,62 @@ export class MoveGenerator {
 
         const possibleQuietMoves: number[] = []; // quiet move -> a move that does not capture a piece or deliver a check
         const possibleCapturesOrCheck: number[] = [];
+
+        for (let fieldID of possibleMoves) {
+            const field = this.boardState.getFieldById(fieldID);
+            const piece: Piece | null = field.getOccupiedBy();
+            if (piece !== null) {
+                // Blocked by own piece
+                if (piece.getColor() === originColor) {
+                    continue;
+                } else {
+                    possibleCapturesOrCheck.push(fieldID);
+                    continue;
+                }
+            } else {
+                possibleQuietMoves.push(fieldID)
+            }
+        }
+        return { quietMoves: possibleQuietMoves, captures: possibleCapturesOrCheck };
+    }
+
+    private calculatePossibleMovesForPawn(originField: Field): MoveResult {
+
+        const originID = originField.getId();
+
+        // offsets sign depends on color
+        const pawnColor = originField.getOccupiedBy()!.getColor();
+        let pawnOffsets = [7, 9, 8, 16];
+        if (pawnColor === 'b') {
+            pawnOffsets = pawnOffsets.map(offset => offset *= -1);
+        }
+        // add case for 1st move in game for given pawn only later
+        if(originField.getOccupiedBy()!.getHasMoved()) { // "!"
+            pawnOffsets.pop(); // so 16 or -16 
+        }
+        let possibleMovesPreBoundriesCheck = pawnOffsets.map(offset => originID + offset);
+        let possibleMovesPreWrappingCheck = possibleMovesPreBoundriesCheck.filter(id => id >= 0 && id < 64);
+        const checkWrapping = (id: number) => {
+
+            let originRow = this.boardState.getRowById(originID);
+            let originFile = this.boardState.getFileById(originID);
+
+            let currentIdsRow = this.boardState.getRowById(id);
+            let currentIdsFile = this.boardState.getFileById(id);
+
+            const rowDiff = Math.abs(currentIdsRow - originRow);
+            const fileDiff = Math.abs(currentIdsFile - originFile);
+
+            return (
+                (fileDiff < 2 && rowDiff < 3)
+            );
+        }
+        let possibleMoves = possibleMovesPreWrappingCheck.filter(checkWrapping);
+
+        const originColor = originField.getOccupiedBy()!.getColor();
+
+        const possibleQuietMoves: number[] = []; // quiet move -> a move that does not capture a piece or deliver a check
+        const possibleCapturesOrCheck: number[] = []; // todo
 
         for (let fieldID of possibleMoves) {
             const field = this.boardState.getFieldById(fieldID);
