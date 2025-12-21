@@ -24,6 +24,8 @@ export class BoardController {
     private dragOriginField: Field | null = null;
     private dragOriginFieldView: FieldView | null = null;
 
+    private currentPossibleMovesForDraggedPiece!: number[];
+
     private config = boardConfig;
 
     constructor(boardView: BoardView) {
@@ -39,6 +41,8 @@ export class BoardController {
 
         this.dragOriginField = null;
         this.dragOriginFieldView = null;
+
+        this.currentPossibleMovesForDraggedPiece = [];
     }
 
     private generateBoard(): void {
@@ -112,6 +116,7 @@ export class BoardController {
 
         const { quietMoves, captures } = this.moveGenerator.calculateMoves(originField);
         this.boardView.highlightFields(quietMoves, captures);
+        this.currentPossibleMovesForDraggedPiece = [...quietMoves, ...captures];
     }
 
     private handlePieceDrop({ pieceId, x, y }: { pieceId: number; x: number; y: number }): void {
@@ -136,7 +141,15 @@ export class BoardController {
 
         if (isMoveToStartingSquare === true || isMoveToWrongColor === true) {
             if (this.dragOriginField === null) return;
-            this.movePiece(pieceId, this.dragOriginFieldView!); // "!"
+            this.movePiece(pieceId, this.dragOriginFieldView!);
+            this.dragOriginField = null;
+            return;
+        }
+
+        if (this.currentPossibleMovesForDraggedPiece.includes(nearestFieldId) === false) {
+            
+            console.log('Illegal move for piece', pieceId, 'to field', nearestFieldId);
+            this.movePiece(pieceId, this.dragOriginFieldView!);
             this.dragOriginField = null;
             return;
         }
