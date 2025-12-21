@@ -1,50 +1,17 @@
-import { Container } from "pixi.js";
-import { boardConfig } from "./configs/boardConfig";
-import { PieceView } from "./views/pieceView";
 import { Listener } from "./events/listener";
 import { GameState } from "./gameState";
-import { FieldView } from "./views/fieldView";
 import { Piece } from "./domain/piece";
 import { Field } from "./domain/field";
+import { FieldView } from "./views/fieldView";
 import { BoardView } from "./views/boardView";
-
-type SlidingPiece = 'r' | 'b' | 'q';
-
-type Direction = {
-    name: string;
-    offset: number;
-};
-
-const ROOK_DIRECTIONS: Direction[] = [
-    { name: 'west', offset: -1 },
-    { name: 'east', offset: +1 },
-    { name: 'north', offset: +8 },
-    { name: 'south', offset: -8 },
-];
-
-const BISHOP_DIRECTIONS: Direction[] = [
-    { name: 'northWest', offset: +7 },
-    { name: 'northEast', offset: +9 },
-    { name: 'southWest', offset: -9 },
-    { name: 'southEast', offset: -7 },
-];
-
-const QUEEN_DIRECTIONS: Direction[] = [
-    ...ROOK_DIRECTIONS,
-    ...BISHOP_DIRECTIONS,
-];
-
-const SLIDING_DIRECTIONS: Record<SlidingPiece, Direction[]> = {
-    r: ROOK_DIRECTIONS,
-    b: BISHOP_DIRECTIONS,
-    q: QUEEN_DIRECTIONS,
-};
-
+import { MoveGenerator } from "./domain/moveGenerator";
+import { boardConfig } from "./configs/boardConfig";
 
 export class Board { // for now state + control
 
     private fields!: Field[][]; // logical
     private boardView !: BoardView; // access to view
+    private moveGenerator !: MoveGenerator;
 
     private config = boardConfig;
     private gameState !: GameState;
@@ -56,6 +23,7 @@ export class Board { // for now state + control
         this.fields = [];
         this.generateBoard();
         this.boardView = boardView;
+        this.moveGenerator = new MoveGenerator(this.fields); // passing reference to this.fields that later are mutated
         this.gameState = GameState.getInstance();
         this.dragOriginField = null;
         this.dragOriginFieldView = null;
@@ -130,7 +98,9 @@ export class Board { // for now state + control
         this.dragOriginField = originField;
         this.dragOriginFieldView = originFieldView;
 
-        this.calculatePossibleMoves(pieceId, originField);
+        // this.calculatePossibleMoves(pieceId, originField);
+        const { quietMoves, captures } = this.moveGenerator.calculateMoves(originField);
+        this.boardView.highlightFields(quietMoves, captures);
     }
 
     private handlePieceDrop({ pieceId, x, y }: { pieceId: number; x: number; y: number }): void {
@@ -205,7 +175,6 @@ export class Board { // for now state + control
         return nearest!.getId();
     }
 
-
     private findPieceById(id: number): Piece | null {
 
         for (const row of this.fields) {
@@ -216,164 +185,6 @@ export class Board { // for now state + control
         }
 
         return null;
-    }
-
-    private calculatePossibleMoves(pieceId: number, originField: Field): void {
-
-        let piece = this.findPieceById(pieceId);
-
-        const role = piece!.getRole(); // ! 
-
-        let possibleQuietMoves: number[] = []; // quiet move -> a move that does not capture a piece or deliver a check
-        let possibleCapturesOrCheck: number[] = []; // quiet move -> a move that does not capture a piece or deliver a check
-
-        if (role === 'r' || role === 'b' || role === 'q') {
-            possibleQuietMoves = this.calculatePossibleMovesForSlidingPiece(originField, role).possibleQuietMoves;
-            possibleCapturesOrCheck = this.calculatePossibleMovesForSlidingPiece(originField, role).possibleCapturesOrCheck;
-        } else {
-
-            switch (piece?.getRole()) {
-                case 'n':
-                    possibleQuietMoves = this.calculatePossibleMovesForKnight(originField).possibleQuietMoves;
-                    possibleCapturesOrCheck = this.calculatePossibleMovesForKnight(originField).possibleCapturesOrCheck;
-                    break;
-                // case 'k':
-                // this.possibleMoves = this.calculatePossibleMovesForKing(pieceId, originField);
-                // break;
-                // case 'p':
-                //     this.possibleMoves = this.calculatePossibleMovesForPawn(pieceId, originField);
-                //     break;
-                default:
-                    console.warn(`Move calculation not implemented for role: ${role}`);
-                    break;
-            }
-        }
-
-
-        // let oppositeColorKingsFieldId = this.getOppositeColorKingFieldId();
-        // then calc 1 -> possibleCaptures based on possibleCapturesOrCheck and oppositeColorKingsFieldId
-        // then calc 2 -> possibleCheck field to highlight based on possibleCapturesOrCheck and oppositeColorKingsFieldId
-        // this.boardView.highlightFields(possibleQuietMoves, possibleCaptures, possibleCheck);
-        this.boardView.highlightFields(possibleQuietMoves, possibleCapturesOrCheck);
-    }
-
-    private calculatePossibleMovesForSlidingPiece(originField: Field, pieceType: SlidingPiece): {
-        possibleQuietMoves: number[],
-        possibleCapturesOrCheck: number[]
-    } {
-
-        const originID = originField.getId();
-
-        if (originID === null) return { possibleQuietMoves: [], possibleCapturesOrCheck: [] };
-
-        const originColor = originField.getOccupiedBy()!.getColor();
-
-        const possibleQuietMoves: number[] = []; // quiet move -> a move that does not capture a piece or deliver a check
-        const possibleCapturesOrCheck: number[] = [];
-
-        const collectMovesInDirection = (startID: number, offset: number) => {
-            let id = startID;
-
-            while (true) {
-                id += offset;
-
-                // Stop if outside board
-                if (id < 0 || id > 63) break;
-
-                // horizontal boundaries check
-                if (offset === -1 && id % 8 === 7) break;   // west wrap
-                if (offset === +1 && id % 8 === 0) break;   // east wrap
-
-                // NW (+7) and SW (-9) - moving left - wrap when file = 7
-                if ((offset === 7 || offset === -9) && id % 8 === 7) { // If  moving left (file - 1), the only way to land on file 7 is if  jumped across the board - illegal so break
-
-                    break;
-                }
-
-                // NE (+9) and SE (-7) - moving right - wrap when file = 0
-                if ((offset === 9 || offset === -7) && id % 8 === 0) break;
-
-
-                const field = this.getFieldById(id);
-                const piece: Piece | null = field.getOccupiedBy();
-
-                if (piece !== null) {
-                    // Blocked by own piece
-                    if (piece.getColor() === originColor) {
-                        break;
-                    } else {
-                        possibleCapturesOrCheck.push(id);
-                        break;
-                    }
-                }
-
-                if (piece === null) {
-                    possibleQuietMoves.push(id);
-                    continue;
-                }
-
-                // Enemy piece - capture possible, but path ends
-                possibleCapturesOrCheck.push(id);
-                break;
-            }
-        };
-
-        for (const direction of SLIDING_DIRECTIONS[pieceType]) {
-            collectMovesInDirection(originID, direction.offset);
-        }
-
-        return { possibleQuietMoves: possibleQuietMoves, possibleCapturesOrCheck: possibleCapturesOrCheck };
-    }
-    private calculatePossibleMovesForKnight(originField: Field): {
-        possibleQuietMoves: number[],
-        possibleCapturesOrCheck: number[]
-    } {
-
-        const originID = originField.getId();
-
-        let knightOffsets = [-17, -15, -10, -6, 6, 10, 15, 17];
-        let possibleMovesPreBoundriesCheck = knightOffsets.map(offset => originID + offset);
-        let possibleMovesPreWrappingCheck = possibleMovesPreBoundriesCheck.filter(id => id >= 0 && id < 64);
-        const checkWrapping = (id: number) => {
-
-            let originRow = this.getRowById(originID);
-            let originFile = this.getFileById(originID);
-
-            let currentIdsRow = this.getRowById(id);
-            let currentIdsFile = this.getFileById(id);
-
-            const rowDiff = Math.abs(currentIdsRow - originRow);
-            const fileDiff = Math.abs(currentIdsFile - originFile);
-
-            return (
-                (rowDiff === 2 && fileDiff === 1) ||
-                (rowDiff === 1 && fileDiff === 2)
-            );
-        }
-        let possibleMoves = possibleMovesPreWrappingCheck.filter(checkWrapping);
-
-        const originColor = originField.getOccupiedBy()!.getColor();
-
-        const possibleQuietMoves: number[] = []; // quiet move -> a move that does not capture a piece or deliver a check
-        const possibleCapturesOrCheck: number[] = [];
-
-        for (let fieldID of possibleMoves) {
-            const field = this.getFieldById(fieldID);
-            const piece: Piece | null = field.getOccupiedBy();
-            if (piece !== null) {
-                // Blocked by own piece
-                if (piece.getColor() === originColor) {
-                    continue;
-                } else {
-                    possibleCapturesOrCheck.push(fieldID);
-                    continue;
-                }
-            } else {
-                possibleQuietMoves.push(fieldID)
-            }
-        }
-
-        return { possibleQuietMoves: possibleQuietMoves, possibleCapturesOrCheck: possibleCapturesOrCheck };
     }
 
     private movePiece(pieceId: number, destination: FieldView): void { // set dragged piece in new position
@@ -413,25 +224,12 @@ export class Board { // for now state + control
 
     public getFields(): Field[][] { return this.fields; }
 
-
-
-    private getFieldById(id: number): Field {
+    private getFieldById(id: number): Field { // also in moveGenerator
 
         return this.fields[7 - Math.floor(id / 8)][id % 8];
     }
 
-
-    private getRowById(id: number): number {
-
-        return (Math.floor(id / 8))
-    }
-
-    private getFileById(id: number): number {
-
-        return (id % 8)
-    }
-
-    private getOppositeColorKingFieldId(): number | null {
+    private getOppositeColorKingFieldId(): number | null { 
         // implement later, check gameState and find id
         return null;
     }
