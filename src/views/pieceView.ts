@@ -1,5 +1,5 @@
 import { Assets, Container, Sprite, FederatedPointerEvent, Graphics, Rectangle } from "pixi.js";
-import { GameState } from "../gameState";
+import { GameState } from "../domain/gameState";
 import { Piece } from "../domain/piece";
 import { Signal } from "../events/signal";
 import { pieceConfig } from "../configs/pieceConfig";

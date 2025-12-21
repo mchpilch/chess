@@ -1,3 +1,4 @@
+import { BoardState } from "./boardState";
 import { Field } from "./field";
 import { Piece } from "./piece";
 
@@ -40,7 +41,10 @@ const SLIDING_DIRECTIONS: Record<SlidingPiece, Direction[]> = {
 
 export class MoveGenerator {
 
-    constructor(private fields: Field[][]) { }
+    private boardState!: BoardState;
+    constructor(boardState: BoardState) {
+        this.boardState = boardState;
+    }
 
     public calculateMoves(originField: Field): MoveResult {
 
@@ -69,7 +73,7 @@ export class MoveGenerator {
     // then calc 1 -> possibleCaptures based on possibleCapturesOrCheck and oppositeColorKingsFieldId
     // then calc 2 -> possibleCheck field to highlight based on possibleCapturesOrCheck and oppositeColorKingsFieldId
     // this.boardView.highlightFields(possibleQuietMoves, possibleCaptures, possibleCheck);
-    
+
     // this.boardView.highlightFields(possibleQuietMoves, possibleCapturesOrCheck);
 
     private calculatePossibleMovesForSlidingPiece(originField: Field, pieceType: SlidingPiece): MoveResult {
@@ -106,7 +110,7 @@ export class MoveGenerator {
                 if ((offset === 9 || offset === -7) && id % 8 === 0) break;
 
 
-                const field = this.getFieldById(id);
+                const field = this.boardState.getFieldById(id);
                 const piece: Piece | null = field.getOccupiedBy();
 
                 if (piece !== null) {
@@ -145,11 +149,11 @@ export class MoveGenerator {
         let possibleMovesPreWrappingCheck = possibleMovesPreBoundriesCheck.filter(id => id >= 0 && id < 64);
         const checkWrapping = (id: number) => {
 
-            let originRow = this.getRowById(originID);
-            let originFile = this.getFileById(originID);
+            let originRow = this.boardState.getRowById(originID);
+            let originFile = this.boardState.getFileById(originID);
 
-            let currentIdsRow = this.getRowById(id);
-            let currentIdsFile = this.getFileById(id);
+            let currentIdsRow = this.boardState.getRowById(id);
+            let currentIdsFile = this.boardState.getFileById(id);
 
             const rowDiff = Math.abs(currentIdsRow - originRow);
             const fileDiff = Math.abs(currentIdsFile - originFile);
@@ -167,7 +171,7 @@ export class MoveGenerator {
         const possibleCapturesOrCheck: number[] = [];
 
         for (let fieldID of possibleMoves) {
-            const field = this.getFieldById(fieldID);
+            const field = this.boardState.getFieldById(fieldID);
             const piece: Piece | null = field.getOccupiedBy();
             if (piece !== null) {
                 // Blocked by own piece
@@ -182,20 +186,5 @@ export class MoveGenerator {
             }
         }
         return { quietMoves: possibleQuietMoves, captures: possibleCapturesOrCheck };
-    }
-
-    private getRowById(id: number): number {
-
-        return (Math.floor(id / 8))
-    }
-
-    private getFileById(id: number): number {
-
-        return (id % 8)
-    }
-
-    private getFieldById(id: number): Field { // also in board
-
-        return this.fields[7 - Math.floor(id / 8)][id % 8];
     }
 }

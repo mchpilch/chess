@@ -1,30 +1,42 @@
-import { Listener } from "./events/listener";
-import { GameState } from "./gameState";
-import { Piece } from "./domain/piece";
-import { Field } from "./domain/field";
-import { FieldView } from "./views/fieldView";
-import { BoardView } from "./views/boardView";
-import { MoveGenerator } from "./domain/moveGenerator";
-import { boardConfig } from "./configs/boardConfig";
+import { Listener } from "../events/listener";
+import { GameState } from "../domain/gameState";
+import { Piece } from "../domain/piece";
+import { Field } from "../domain/field";
+import { FieldView } from "../views/fieldView";
+import { BoardView } from "../views/boardView";
+import { MoveGenerator } from "../domain/moveGenerator";
+import { boardConfig } from "../configs/boardConfig";
+import { BoardState } from "../domain/boardState";
 
-export class Board { // for now state + control
+/*** 
+ * Board - class responsible for controlling flow. Orchestrator. 
+ * Merges boardView, boardState and MoveGeneration by calling subslasses.
+*/
+export class Board { 
 
-    private fields!: Field[][]; // logical
-    private boardView !: BoardView; // access to view
+    private fields!: Field[][];
+    private boardView !: BoardView;
+    private boardState !: BoardState;
     private moveGenerator !: MoveGenerator;
 
-    private config = boardConfig;
     private gameState !: GameState;
+
     private dragOriginField: Field | null = null;
     private dragOriginFieldView: FieldView | null = null;
+    
+    private config = boardConfig;
 
     constructor(boardView: BoardView) {
 
         this.fields = [];
         this.generateBoard();
+
+        this.boardState = new BoardState(this.fields);
+        this.moveGenerator = new MoveGenerator(this.boardState); // passing reference to this.fields that later are mutated
+        
         this.boardView = boardView;
-        this.moveGenerator = new MoveGenerator(this.fields); // passing reference to this.fields that later are mutated
         this.gameState = GameState.getInstance();
+        
         this.dragOriginField = null;
         this.dragOriginFieldView = null;
     }
@@ -92,13 +104,12 @@ export class Board { // for now state + control
             return;
         }
 
-        const originField = this.getFieldById(originFieldId);
+        const originField = this.boardState.getFieldById(originFieldId);
         const originFieldView = this.boardView.getFieldViewById(originFieldId);
 
         this.dragOriginField = originField;
         this.dragOriginFieldView = originFieldView;
 
-        // this.calculatePossibleMoves(pieceId, originField);
         const { quietMoves, captures } = this.moveGenerator.calculateMoves(originField);
         this.boardView.highlightFields(quietMoves, captures);
     }
@@ -114,7 +125,7 @@ export class Board { // for now state + control
             return;
         }
 
-        const nearestField = this.getFieldById(nearestFieldId)
+        const nearestField = this.boardState.getFieldById(nearestFieldId)
         const nearestFieldView = this.boardView.getFieldViewById(nearestFieldId)
 
         this.boardView.turnOffHighlights();
@@ -222,15 +233,13 @@ export class Board { // for now state + control
         }
     }
 
-    public getFields(): Field[][] { return this.fields; }
-
-    private getFieldById(id: number): Field { // also in moveGenerator
-
-        return this.fields[7 - Math.floor(id / 8)][id % 8];
-    }
-
-    private getOppositeColorKingFieldId(): number | null { 
+    private getOppositeColorKingFieldId(): number | null {
         // implement later, check gameState and find id
         return null;
+    }
+
+    public getBoardState(): BoardState {
+
+        return this.boardState;
     }
 }

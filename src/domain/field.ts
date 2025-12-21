@@ -1,4 +1,4 @@
-import { Piece } from "./domain/piece";
+import { Piece } from "./piece";
 
 export class Field {
 

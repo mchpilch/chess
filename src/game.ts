@@ -2,8 +2,8 @@
 
 import { Application } from 'pixi.js';
 import { FenParser } from './domain/fenParser';
-import { Board } from './board';
-import { GameState } from './gameState';
+import { Board } from './controller/board';
+import { GameState } from './domain/gameState';
 import { boardConfig } from "./configs/boardConfig";
 import { PieceFactory } from './pieceFactory';
 import { BoardView } from './views/boardView';
@@ -82,7 +82,7 @@ export class Game {
                         offsetY + i * boardConfig.squareWidth + boardConfig.squareWidth / 2
                     );
 
-                    this.board.getFields()[i][j].setOccupiedBy(piece);
+                    this.board.getBoardState().getFields()[i][j].setOccupiedBy(piece);
                     this.boardView.addPieceView(pieceView); //should be boardView?
 
                     this.app.stage.addChild(pieceView);
