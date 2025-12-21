@@ -1,12 +1,12 @@
 
 
 import { Application } from 'pixi.js';
-import { FenParser } from './domain/fenParser';
-import { Board } from './controller/board';
-import { GameState } from './domain/gameState';
-import { boardConfig } from "./configs/boardConfig";
-import { PieceFactory } from './pieceFactory';
-import { BoardView } from './views/boardView';
+import { FenParser } from '../domain/fenParser';
+import { BoardController } from '../controllers/boardController';
+import { GameState } from '../domain/gameState';
+import { boardConfig } from "../configs/boardConfig";
+import { PieceFactory } from '../factories/pieceFactory';
+import { BoardView } from '../views/boardView';
 type GameInitData = {
     app: Application,
 };
@@ -18,7 +18,7 @@ export class Game {
 
     private app!: Application;
     // private fenParser!: FenParser;
-    private board!: Board;
+    private boardController!: BoardController;
     private boardView!: BoardView;
     private gameState!: GameState;
     private boardConfig = boardConfig;
@@ -62,7 +62,7 @@ export class Game {
         const piecefactory = new PieceFactory();
 
         this.boardView = new BoardView();
-        this.board = new Board(this.boardView);
+        this.boardController = new BoardController(this.boardView);
 
         this.app.stage.interactive = true;
         this.app.stage.addChild(this.boardView.getBoard());
@@ -82,7 +82,7 @@ export class Game {
                         offsetY + i * boardConfig.squareWidth + boardConfig.squareWidth / 2
                     );
 
-                    this.board.getBoardState().getFields()[i][j].setOccupiedBy(piece);
+                    this.boardController.getBoardState().getFields()[i][j].setOccupiedBy(piece);
                     this.boardView.addPieceView(pieceView); //should be boardView?
 
                     this.app.stage.addChild(pieceView);
@@ -90,7 +90,7 @@ export class Game {
             }
         }
 
-        this.board.attachListenersToPieces();
+        this.boardController.attachListenersToPieces();
 
     }
 }

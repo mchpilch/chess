@@ -12,7 +12,7 @@ import { BoardState } from "../domain/boardState";
  * Board - class responsible for controlling flow. Orchestrator. 
  * Merges boardView, boardState and MoveGeneration by calling subslasses.
 */
-export class Board { 
+export class BoardController { 
 
     private fields!: Field[][];
     private boardView !: BoardView;
