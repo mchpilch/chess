@@ -195,56 +195,68 @@ export class MoveGenerator {
     private calculatePossibleMovesForPawn(originField: Field): MoveResult {
 
         const originID = originField.getId();
+        const pawn = originField.getOccupiedBy()!;
+        const color = pawn.getColor();
 
-        // offsets sign depends on color
-        const pawnColor = originField.getOccupiedBy()!.getColor();
-        let pawnOffsets = [7, 9, 8, 16];
-        if (pawnColor === 'b') {
-            pawnOffsets = pawnOffsets.map(offset => offset *= -1);
-        }
-        // add case for 1st move in game for given pawn only later
-        if(originField.getOccupiedBy()!.getHasMoved()) { // "!"
-            pawnOffsets.pop(); // so 16 or -16 
-        }
-        let possibleMovesPreBoundriesCheck = pawnOffsets.map(offset => originID + offset);
-        let possibleMovesPreWrappingCheck = possibleMovesPreBoundriesCheck.filter(id => id >= 0 && id < 64);
-        const checkWrapping = (id: number) => {
+        const possibleQuietMoves = this.calculatePossibleQuietMovesForPawn(originID, pawn, color);
+        const possibleCapturesOrCheck = this.calculatePossibleCapturesOrCheksForPawn(originID, color);
 
-            let originRow = this.boardState.getRowById(originID);
-            let originFile = this.boardState.getFileById(originID);
+        return {
+            quietMoves: possibleQuietMoves,
+            captures: possibleCapturesOrCheck,
+        };
+    }
 
-            let currentIdsRow = this.boardState.getRowById(id);
-            let currentIdsFile = this.boardState.getFileById(id);
+    private calculatePossibleQuietMovesForPawn(originID: number, pawn: Piece, color: 'w' | 'b') {
 
-            const rowDiff = Math.abs(currentIdsRow - originRow);
-            const fileDiff = Math.abs(currentIdsFile - originFile);
+        const possibleQuietMoves: number[] = [];
 
-            return (
-                (fileDiff < 2 && rowDiff < 3)
-            );
-        }
-        let possibleMoves = possibleMovesPreWrappingCheck.filter(checkWrapping);
+        const direction = color === 'w' ? 8 : -8;
 
-        const originColor = originField.getOccupiedBy()!.getColor();
+        const oneStep = originID + direction;
+        if (oneStep >= 0 && oneStep < 64) {
+            if (this.boardState.getFieldById(oneStep).getOccupiedBy() === null) {
+                possibleQuietMoves.push(oneStep);
 
-        const possibleQuietMoves: number[] = []; // quiet move -> a move that does not capture a piece or deliver a check
-        const possibleCapturesOrCheck: number[] = []; // todo
-
-        for (let fieldID of possibleMoves) {
-            const field = this.boardState.getFieldById(fieldID);
-            const piece: Piece | null = field.getOccupiedBy();
-            if (piece !== null) {
-                // Blocked by own piece
-                if (piece.getColor() === originColor) {
-                    continue;
-                } else {
-                    possibleCapturesOrCheck.push(fieldID);
-                    continue;
+                // double move (only if first move & path is clear)
+                const twoStep = originID + direction * 2;
+                if (
+                    pawn.getHasMoved() === false &&
+                    this.boardState.getFieldById(twoStep).getOccupiedBy() === null
+                ) {
+                    possibleQuietMoves.push(twoStep);
                 }
-            } else {
-                possibleQuietMoves.push(fieldID)
             }
         }
-        return { quietMoves: possibleQuietMoves, captures: possibleCapturesOrCheck };
+        return possibleQuietMoves;
+    }
+    private calculatePossibleCapturesOrCheksForPawn(originID: number, color: 'w' | 'b') {
+
+        const possibleCapturesOrCheck: number[] = [];
+
+        const captureOffsets =
+            color === 'w' ? [7, 9] : [-7, -9];
+
+        for (const offset of captureOffsets) {
+            const targetID = originID + offset;
+            if (targetID < 0 || targetID > 63) continue; // beyond bounds - pass offset
+
+            const originFile = this.boardState.getFileById(originID);
+            const targetFile = this.boardState.getFileById(targetID);
+
+            // prevent horizontal wrapping
+            if (Math.abs(targetFile - originFile) !== 1) continue;
+
+            const targetField = this.boardState.getFieldById(targetID);
+            const targetPiece = targetField.getOccupiedBy();
+
+            // regular capture
+            if (targetPiece !== null && targetPiece.getColor() !== color) {
+                possibleCapturesOrCheck.push(targetID);
+            }
+
+            // todo en passant
+        }
+        return possibleCapturesOrCheck;
     }
 }
