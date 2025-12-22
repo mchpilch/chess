@@ -67,6 +67,10 @@ export class MoveGenerator {
             return this.calculatePossibleMovesForPawn(originField);
         }
 
+        if (role === 'k') {
+            return this.calculatePossibleMovesForKing(originField);
+        }
+
         console.warn(`Move calculation not implemented for role: ${role}`);
         return { quietMoves: [], captures: [] };
     }
@@ -80,6 +84,7 @@ export class MoveGenerator {
 
     // this.boardView.highlightFields(possibleQuietMoves, possibleCapturesOrCheck);
 
+    // QUEEN/ROOK/BISHOP
     private calculatePossibleMovesForSlidingPiece(originField: Field, pieceType: SlidingPiece): MoveResult {
 
         const originID = originField.getId();
@@ -144,6 +149,7 @@ export class MoveGenerator {
         return { quietMoves: possibleQuietMoves, captures: possibleCapturesOrCheck };
     }
 
+    //KNIGHT
     private calculatePossibleMovesForKnight(originField: Field): MoveResult {
 
         const originID = originField.getId();
@@ -191,7 +197,8 @@ export class MoveGenerator {
         }
         return { quietMoves: possibleQuietMoves, captures: possibleCapturesOrCheck };
     }
-
+    
+    //PAWN
     private calculatePossibleMovesForPawn(originField: Field): MoveResult {
 
         const originID = originField.getId();
@@ -259,4 +266,53 @@ export class MoveGenerator {
         }
         return possibleCapturesOrCheck;
     }
+    // KING
+    private calculatePossibleMovesForKing(originField: Field): MoveResult { 
+
+        const originID = originField.getId();
+        const king = originField.getOccupiedBy()!;
+        const color = king.getColor();
+
+        const possibleQuietMoves: number[] = [];
+        const possibleCapturesOrCheck: number[] = [];
+
+        const kingOffsets = [-9, -8, -7, -1, 1, 7, 8, 9];
+
+        const originFile = this.boardState.getFileById(originID);
+        const originRow = this.boardState.getRowById(originID);
+
+        for (const offset of kingOffsets) {
+
+            const targetID = originID + offset;
+
+            // board bounds
+            if (targetID < 0 || targetID > 63) continue;
+
+            const targetFile = this.boardState.getFileById(targetID);
+            const targetRow = this.boardState.getRowById(targetID);
+
+            // prevent wrapping (king moves max 1 file + 1 rank)
+            if (
+                Math.abs(targetFile - originFile) > 1 ||
+                Math.abs(targetRow - originRow) > 1
+            ) {
+                continue;
+            }
+
+            const targetField = this.boardState.getFieldById(targetID);
+            const targetPiece = targetField.getOccupiedBy();
+
+            if (targetPiece === null) {
+                possibleQuietMoves.push(targetID);
+            } else if (targetPiece.getColor() !== color) {
+                possibleCapturesOrCheck.push(targetID);
+            }
+        }
+
+        return {
+            quietMoves: possibleQuietMoves,
+            captures: possibleCapturesOrCheck,
+        };
+    }
+
 }

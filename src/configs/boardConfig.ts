@@ -1,5 +1,7 @@
 export const boardConfig = {
 
+    applyPieceSpecyficMoveConstraints: false,
+
     numberOfRows: 8,
     numberOfFiles: 8,
     squareWidth: 75,

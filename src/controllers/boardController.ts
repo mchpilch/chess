@@ -146,15 +146,15 @@ export class BoardController {
             return;
         }
 
-        if (this.currentPossibleMovesForDraggedPiece.includes(nearestFieldId) === false) {
-            
+        if (this.config.applyPieceSpecyficMoveConstraints === true && this.currentPossibleMovesForDraggedPiece.includes(nearestFieldId) === false) {
+
             console.log('Illegal move for piece', pieceId, 'to field', nearestFieldId);
             this.movePiece(pieceId, this.dragOriginFieldView!);
             this.dragOriginField = null;
             return;
         }
 
-        if (isMoveToEnemySquare === true) { // here more rules will be added
+        if (isMoveToEnemySquare === true) {
             let piece = nearestField.getOccupiedBy()!;
             let pieceView = this.boardView.getPieceViewById(piece.getId())!;
             pieceView.visible = false; // later: consider if this is enough or should it be rm from stage completely
@@ -162,7 +162,7 @@ export class BoardController {
 
         this.movePiece(pieceId, nearestFieldView);
         nearestField.setOccupiedBy(this.findPieceById(pieceId));
-        nearestField.getOccupiedBy()?.markMoved(); // "?"
+        nearestField.getOccupiedBy()!.markMoved();
 
         this.gameState.incrementMoveCount();
         this.gameState.setNextTurn();
