@@ -1,13 +1,13 @@
 import { Listener } from "../events/listener";
 import { GameState } from "../domain/gameState";
+import { BoardState } from "../domain/boardState";
 import { Piece } from "../domain/piece";
 import { Field } from "../domain/field";
 import { FieldView } from "../views/fieldView";
 import { BoardView } from "../views/boardView";
 import { MoveGenerator } from "../domain/moveGenerator";
+import { MoveValidator } from "../domain/moveValidator";
 import { boardConfig } from "../configs/boardConfig";
-import { BoardState } from "../domain/boardState";
-
 /*** 
  * Board - class responsible for controlling flow. Orchestrator. 
  * Merges boardView, boardState and MoveGeneration by calling subslasses.
@@ -15,9 +15,12 @@ import { BoardState } from "../domain/boardState";
 export class BoardController {
 
     private fields!: Field[][];
+    private pieces!: { w: Piece[]; b: Piece[] };
+
     private boardView !: BoardView;
     private boardState !: BoardState;
     private moveGenerator !: MoveGenerator;
+    private moveValidator !: MoveValidator;
 
     private gameState !: GameState;
 
@@ -31,10 +34,16 @@ export class BoardController {
     constructor(boardView: BoardView) {
 
         this.fields = [];
+        this.pieces = {
+            w: [],
+            b: [],
+        };
+
         this.generateBoard();
 
-        this.boardState = new BoardState(this.fields);
-        this.moveGenerator = new MoveGenerator(this.boardState); // passing reference to this.fields that later are mutated
+        this.boardState = new BoardState(this.fields, this.pieces);
+        this.moveGenerator = new MoveGenerator(this.boardState); // passing references to this.fields that later are mutated
+        this.moveValidator = new MoveValidator(this.boardState); // passing references to this.fields that later are mutated
 
         this.boardView = boardView;
         this.gameState = GameState.getInstance();
@@ -158,6 +167,7 @@ export class BoardController {
             let piece = nearestField.getOccupiedBy()!;
             let pieceView = this.boardView.getPieceViewById(piece.getId())!;
             pieceView.visible = false; // later: consider if this is enough or should it be rm from stage completely
+            this.boardState.removePieceFromStorage(piece);
         }
 
         this.movePiece(pieceId, nearestFieldView);
@@ -239,13 +249,13 @@ export class BoardController {
         }
     }
 
-    private getOppositeColorKingFieldId(): number | null {
-        // implement later, check gameState and find id
-        return null;
-    }
-
     public getBoardState(): BoardState {
 
         return this.boardState;
+    }
+
+    public putPieceIntoStorage(piece: Piece, color: 'w' | 'b'): void {
+
+        this.pieces[color].push(piece);
     }
 }

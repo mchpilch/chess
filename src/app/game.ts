@@ -76,6 +76,7 @@ export class Game {
                 if (fenSquare !== null) {
 
                     const { piece, view: pieceView } = piecefactory.create(fenSquare.role, fenSquare.color);
+                    this.boardController.putPieceIntoStorage(piece, fenSquare.color);
 
                     pieceView.position.set(
                         offsetX + j * boardConfig.squareWidth + boardConfig.squareWidth / 2,

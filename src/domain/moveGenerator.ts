@@ -1,11 +1,7 @@
+import { MoveResult } from "../commonTypes/tsTypes";
 import { BoardState } from "./boardState";
 import { Field } from "./field";
 import { Piece } from "./piece";
-
-export type MoveResult = {
-    quietMoves: number[];
-    captures: number[];
-};
 
 export type SlidingPiece = 'r' | 'b' | 'q';
 
@@ -75,16 +71,17 @@ export class MoveGenerator {
         return { quietMoves: [], captures: [] };
     }
 
-    // then
+    public calculateMovesByPiece(piece: Piece): MoveResult {
 
-    // let oppositeColorKingsFieldId = this.getOppositeColorKingFieldId();
-    // then calc 1 -> possibleCaptures based on possibleCapturesOrCheck and oppositeColorKingsFieldId
-    // then calc 2 -> possibleCheck field to highlight based on possibleCapturesOrCheck and oppositeColorKingsFieldId
-    // this.boardView.highlightFields(possibleQuietMoves, possibleCaptures, possibleCheck);
+        const originField = this.boardState.getFieldByPiece(piece);
 
-    // this.boardView.highlightFields(possibleQuietMoves, possibleCapturesOrCheck);
+        if (originField === null) {
+            return { quietMoves: [], captures: [] };
+        }
+        return this.calculateMoves(originField);
+    }
 
-    // QUEEN/ROOK/BISHOP
+    // QUEEN / ROOK / BISHOP
     private calculatePossibleMovesForSlidingPiece(originField: Field, pieceType: SlidingPiece): MoveResult {
 
         const originID = originField.getId();
@@ -149,7 +146,7 @@ export class MoveGenerator {
         return { quietMoves: possibleQuietMoves, captures: possibleCapturesOrCheck };
     }
 
-    //KNIGHT
+    // KNIGHT
     private calculatePossibleMovesForKnight(originField: Field): MoveResult {
 
         const originID = originField.getId();
@@ -197,8 +194,8 @@ export class MoveGenerator {
         }
         return { quietMoves: possibleQuietMoves, captures: possibleCapturesOrCheck };
     }
-    
-    //PAWN
+
+    // PAWN
     private calculatePossibleMovesForPawn(originField: Field): MoveResult {
 
         const originID = originField.getId();
@@ -237,6 +234,7 @@ export class MoveGenerator {
         }
         return possibleQuietMoves;
     }
+
     private calculatePossibleCapturesOrCheksForPawn(originID: number, color: 'w' | 'b') {
 
         const possibleCapturesOrCheck: number[] = [];
@@ -266,8 +264,9 @@ export class MoveGenerator {
         }
         return possibleCapturesOrCheck;
     }
+
     // KING
-    private calculatePossibleMovesForKing(originField: Field): MoveResult { 
+    private calculatePossibleMovesForKing(originField: Field): MoveResult {
 
         const originID = originField.getId();
         const king = originField.getOccupiedBy()!;
