@@ -110,7 +110,7 @@ export class BoardController {
     private handlePieceDragStarted({ pieceId, x, y }: { pieceId: number; x: number; y: number }): void {
 
         const originFieldId = this.findNearestFieldId(x, y);
-
+        // console.log('xxx handlePieceDragStarted pieceID', pieceId, 'originFieldId', originFieldId);
         if (originFieldId === null) {
             this.dragOriginField = null;
             this.dragOriginFieldView = null;
@@ -124,13 +124,26 @@ export class BoardController {
         this.dragOriginFieldView = originFieldView;
 
         const { quietMoves, captures } = this.moveGenerator.calculateMoves(originField);
-        this.boardView.highlightFields(quietMoves, captures);
-        this.currentPossibleMovesForDraggedPiece = [...quietMoves, ...captures];
+
+        const piece = originField.getOccupiedBy()!;
+        const originId = originField.getId();
+
+        const legalQuietMoves = quietMoves.filter(moveDestination =>
+            this.moveValidator.isMoveLegal(piece, originId, moveDestination)
+        );
+
+        const legalCaptures = captures.filter(moveDestination =>
+            this.moveValidator.isMoveLegal(piece, originId, moveDestination)
+        );
+
+        this.boardView.highlightFields(legalQuietMoves, legalCaptures);
+        this.currentPossibleMovesForDraggedPiece = [...legalQuietMoves, ...legalCaptures];
     }
 
     private handlePieceDrop({ pieceId, x, y }: { pieceId: number; x: number; y: number }): void {
 
         const nearestFieldId = this.findNearestFieldId(x, y);
+        // console.log('xxx handlePieceDrop pieceID', pieceId, 'nearestFieldId', nearestFieldId);
 
         if (nearestFieldId === null) {
 
@@ -150,16 +163,25 @@ export class BoardController {
 
         if (isMoveToStartingSquare === true || isMoveToWrongColor === true) {
             if (this.dragOriginField === null) return;
-            this.movePiece(pieceId, this.dragOriginFieldView!);
-            this.dragOriginField = null;
+            // block
+            this.snapBackPieceToOrigin(pieceId);
             return;
         }
 
-        if (this.config.applyPieceSpecyficMoveConstraints === true && this.currentPossibleMovesForDraggedPiece.includes(nearestFieldId) === false) {
+        const isMoveLegal = this.moveValidator.isMoveLegal(
+            this.findPieceById(pieceId)!,
+            this.dragOriginField!.getId(),
+            nearestFieldId
+        );
+        console.log('xxx isMoveLegal', isMoveLegal);
+
+        if ((this.config.applyPieceSpecyficMoveConstraints === true &&
+            this.currentPossibleMovesForDraggedPiece.includes(nearestFieldId) === false) || // this is temp will be rm when moveValidator is fully functional, highlights will need to be based on validator too
+            isMoveLegal === false) {
 
             console.log('Illegal move for piece', pieceId, 'to field', nearestFieldId);
-            this.movePiece(pieceId, this.dragOriginFieldView!);
-            this.dragOriginField = null;
+            // block
+            this.snapBackPieceToOrigin(pieceId);
             return;
         }
 
@@ -201,6 +223,12 @@ export class BoardController {
             }
         }
         return nearest!.getId();
+    }
+
+    private snapBackPieceToOrigin(pieceId: number): void {
+
+        this.movePiece(pieceId, this.dragOriginFieldView!);
+        this.dragOriginField = null;
     }
 
     private findPieceById(id: number): Piece | null {
