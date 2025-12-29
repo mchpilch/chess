@@ -31,10 +31,6 @@ export class GameState {
     public getCurrentTurn(): 'w' | 'b' {
         return this.currentTurn;
     }
-
-    public getCurrentOpponentColor(): 'w' | 'b' {
-        return this.currentTurn === 'w' ? 'b' : 'w';
-    }
     
     public getMoveCount(): number {
         return this.moveCount;
