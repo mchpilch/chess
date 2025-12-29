@@ -14,11 +14,12 @@ export class MoveValidator {
     }
 
     public isSquareAttacked(fieldId: number, byColor: 'w' | 'b'): boolean {
-        
+        console.log('xxx color', byColor);
+
         const enemyPieces = this.boardState.getPiecesByColor(byColor);
 
         for (const piece of enemyPieces) {
-     
+
             const moves: MoveResult = this.moveGenerator.calculateMovesByPiece(piece);
             if (moves.captures.includes(fieldId) || moves.quietMoves.includes(fieldId)) {
                 return true;
@@ -27,13 +28,14 @@ export class MoveValidator {
         return false;
     }
 
-    // todo
-    // public isKingInCheck(color) {
+    public isKingInCheck(color: 'w' | 'b'): boolean {
 
-    // }
+        const list = this.boardState.getPiecesByColor(color);
 
-    // todo
-    // public getLegalMoves() {
+        let king = list.find(piece => piece.getRole() === 'k'); // in future handle king rm rules from storage and add safe guards
+        let kingField = this.boardState.getFieldByPiece(king!);
 
-    // }
+        let enemyColor = (color === 'w' ? 'b' : 'w') as 'w' | 'b';
+        return this.isSquareAttacked(kingField!.getId(), enemyColor);
+    }
 }

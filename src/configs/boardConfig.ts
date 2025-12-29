@@ -1,6 +1,6 @@
 export const boardConfig = {
 
-    applyPieceSpecyficMoveConstraints: true,
+    applyPieceSpecyficMoveConstraints: false,
 
     numberOfRows: 8,
     numberOfFiles: 8,
