@@ -44,3 +44,6 @@
 // #Parameter Properties 
 
 // dir and files structure windows command -> tree /f
+
+// Can a pinned piece be involved in a checkmate? good anwser here:
+// https://www.reddit.com/r/chess/comments/1mg4fi/comment/cc9k6mb/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button

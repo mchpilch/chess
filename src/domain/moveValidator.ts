@@ -18,16 +18,52 @@ export class MoveValidator {
     }
 
     public isMoveLegal(piece: Piece, originFieldId: number, destinationFieldId: number): boolean {
-        
+
         if (this.isKingAdjacencyViolation(piece, destinationFieldId) === true) return false;
-        // if (this.isPinned(piece, fromId, toId)) return false;
-        // if (this.leavesKingInCheck(piece, fromId, toId)) return false;
+        if (this.leavesCurrentKingInCheck(piece, originFieldId, destinationFieldId) === true) return false; // Protects from moving pinned pieces
+        // so next one should check if the move gives check to opponent king?
         return true;
+    }
+
+    private leavesCurrentKingInCheck(piece: Piece, originFieldId: number, destinationFieldId: number): boolean {
+
+        const originField = this.boardState.getFieldById(originFieldId);
+        const destinationField = this.boardState.getFieldById(destinationFieldId);
+
+        // save for future rollback
+        const residentOfDestinationField = destinationField.getOccupiedBy(); // can be null or a piece
+        console.log('xxx residentOfDestinationField', residentOfDestinationField);
+
+        originField.setOccupiedBy(null);
+        destinationField.setOccupiedBy(piece);
+
+        // Check if current king in that scenario is under attack
+        const isInCheck = this.isKingInCheck(piece.getColor());
+
+        // Rollback 
+        destinationField.setOccupiedBy(residentOfDestinationField); // piece or null
+        originField.setOccupiedBy(piece);
+        console.log('xxx Leaves current king in check? : ', isInCheck);
+
+        return isInCheck;
+    }
+
+    public isKingInCheck(color: 'w' | 'b'): boolean {
+
+        const list = this.boardState.getPiecesByColor(color);
+
+        let currentKing = list.find(piece => piece.getRole() === 'k'); // in future handle king rm rules from storage and add safe guards
+        let currentKingField = this.boardState.getFieldByPiece(currentKing!);
+
+        const attackedByColor = color === 'w' ? 'b' : 'w';
+
+        console.log('xxx isKingInCheck', this.isSquareAttacked(currentKingField!.getId(), attackedByColor));
+
+        return this.isSquareAttacked(currentKingField!.getId(), attackedByColor);
     }
 
 
     public isSquareAttacked(fieldId: number, byColor: 'w' | 'b'): boolean {
-        console.log('xxx color', byColor);
 
         const enemyPieces = this.boardState.getPiecesByColor(byColor);
 
@@ -41,23 +77,12 @@ export class MoveValidator {
         return false;
     }
 
-    public isKingInCheck(color: 'w' | 'b'): boolean {
-
-        const list = this.boardState.getPiecesByColor(color);
-
-        let king = list.find(piece => piece.getRole() === 'k'); // in future handle king rm rules from storage and add safe guards
-        let kingField = this.boardState.getFieldByPiece(king!);
-
-        let enemyColor = this.gameState.getCurrentOpponentColor();
-        return this.isSquareAttacked(kingField!.getId(), enemyColor);
-    }
-
     private isKingAdjacencyViolation(movingPiece: Piece, destinationFieldId: number): boolean { // there has to be at leat one row and one column of difference between kings
-        
+
         if (movingPiece.getRole() !== 'k') return false;
 
         // enemy king calcs
-        let enemyColor = this.gameState.getCurrentOpponentColor();
+        let enemyColor = movingPiece.getColor() === 'w' ? 'b' : 'w' as 'w' | 'b';
         let enemyKing = this.boardState.getPiecesByColor(enemyColor).find(piece => piece.getRole() === 'k');
         let enemyKingFieldId = this.boardState.getFieldByPiece(enemyKing!)!.getId();
 

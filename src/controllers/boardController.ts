@@ -168,16 +168,8 @@ export class BoardController {
             return;
         }
 
-        const isMoveLegal = this.moveValidator.isMoveLegal(
-            this.findPieceById(pieceId)!,
-            this.dragOriginField!.getId(),
-            nearestFieldId
-        );
-        console.log('xxx isMoveLegal', isMoveLegal);
-
         if ((this.config.applyPieceSpecyficMoveConstraints === true &&
-            this.currentPossibleMovesForDraggedPiece.includes(nearestFieldId) === false) || // this is temp will be rm when moveValidator is fully functional, highlights will need to be based on validator too
-            isMoveLegal === false) {
+            this.currentPossibleMovesForDraggedPiece.includes(nearestFieldId) === false)) {
 
             console.log('Illegal move for piece', pieceId, 'to field', nearestFieldId);
             // block
