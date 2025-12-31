@@ -8,6 +8,11 @@ export const boardConfig = {
     // colorDark: '#c6dac0ff',
     colorDark: '#9e705b',
     colorLight: '#e8d3b8',
+
+
+    strokeColorForDark: '#876e62ff', // todo with subSquares
+    strokeColorForLight: '#000000ff', // todo with subSquares
+
     possibleMoveColorHighlight: '#0ed6ccff',
     possibleCheckColorHighlight: '#ffff00ff',
     captureColorHighlight: '#bd3ab9ff',
@@ -28,4 +33,8 @@ export const boardConfig = {
         x: 2,
         y: 2
     },
+
+    gridActive: true,
+    gridColor: '#41d689ff',
+    gridStrokeWidth: 2,
 };

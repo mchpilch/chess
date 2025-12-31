@@ -1,4 +1,4 @@
-import { Container } from "pixi.js";
+import { Container, Graphics } from "pixi.js";
 import { FieldView } from "./fieldView";
 import { PieceView } from "./pieceView";
 import { boardConfig } from "../configs/boardConfig";
@@ -53,6 +53,12 @@ export class BoardView { // rendering
                 boardContainer.addChild(fieldView.getContainer());
             }
             this.fieldViews.push(rowView);
+
+            if (this.config.gridActive === true) {
+                const grid = this.generateGrid();
+                boardContainer.addChild(grid);
+            }
+
         }
         return boardContainer;
     };
@@ -75,17 +81,9 @@ export class BoardView { // rendering
                     fillFieldWithColor(fieldView, this.config.possibleMoveColorHighlight);
                 }
 
-                // let id = fieldView.getId();
-                // let field = this.getFieldById(id);
-
                 if (possibleCaptures.includes(fieldView.getId())) {
 
-                //     if (field.getOccupiedBy()?.getRole() === 'k') {
-
-                //         fillFieldWithColor(fieldView, this.config.possibleCheckColorHighlight);
-                //     } else {
-
-                fillFieldWithColor(fieldView, this.config.captureColorHighlight);
+                    fillFieldWithColor(fieldView, this.config.captureColorHighlight);
                 }
 
             }
@@ -121,4 +119,32 @@ export class BoardView { // rendering
         return this.pieceViews.get(id);
     }
 
+    private generateGrid() {
+
+        const grid = new Graphics();
+
+        const { numberOfRows, numberOfFiles, squareWidth, offset, gridColor, gridStrokeWidth } = this.config;
+
+        // Draw vertical lines
+        for (let i = 0; i < numberOfFiles + 1; i++) {
+
+            grid // Move to top of each line 
+                .moveTo(offset.x + i * squareWidth, offset.x + 0)
+                 // Draw down to bottom
+                .lineTo(offset.x + i * squareWidth, offset.x + squareWidth * numberOfFiles);
+        }
+
+        // Draw horizontal lines
+        for (let i = 0; i < numberOfRows + 1; i++) {
+            
+            grid // Move to start of each line
+                .moveTo(offset.y + 0, offset.y + i * squareWidth)
+                 // Draw across to end
+                .lineTo(offset.y + squareWidth * numberOfRows, offset.y + i * squareWidth);
+        }
+
+        // Add stroke
+        grid.stroke({ color: gridColor, width: gridStrokeWidth });
+        return grid;
+    }
 }
