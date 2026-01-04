@@ -56,6 +56,7 @@ export class MoveGenerator {
         }
 
         if (role === 'n') {
+
             return this.calculatePossibleMovesForKnight(originField);
         }
 
@@ -64,6 +65,7 @@ export class MoveGenerator {
         }
 
         if (role === 'k') {
+
             return this.calculatePossibleMovesForKing(originField);
         }
 
@@ -275,11 +277,14 @@ export class MoveGenerator {
         const possibleQuietMoves: number[] = [];
         const possibleCapturesOrCheck: number[] = [];
 
-        const kingOffsets = [-9, -8, -7, -1, 1, 7, 8, 9];
+        const castlingOffsets = [-4, -3, -2, 2, 3]; // queen side / king side // [-4, -3, -2, 2, 3];
+        const regularOffsets = [-9, -8, -7, -1, 1, 7, 8, 9];
+        const kingOffsets = [...regularOffsets, ...castlingOffsets];
 
         const originFile = this.boardState.getFileById(originID);
         const originRow = this.boardState.getRowById(originID);
 
+        // regular moves
         for (const offset of kingOffsets) {
 
             const targetID = originID + offset;
@@ -290,9 +295,9 @@ export class MoveGenerator {
             const targetFile = this.boardState.getFileById(targetID);
             const targetRow = this.boardState.getRowById(targetID);
 
-            // prevent wrapping (king moves max 1 file + 1 rank)
+            // prevent wrapping (king moves max 1 file + 1 rank) - for castling max 2 files
             if (
-                Math.abs(targetFile - originFile) > 1 ||
+                Math.abs(targetFile - originFile) > 4 || // castling piece drop possibilities )
                 Math.abs(targetRow - originRow) > 1
             ) {
                 continue;
@@ -307,7 +312,9 @@ export class MoveGenerator {
                 possibleCapturesOrCheck.push(targetID);
             }
         }
-
+        console.log('xxxx possibleQuietMoves', possibleQuietMoves );
+        
+        // castling possiblities
         return {
             quietMoves: possibleQuietMoves,
             captures: possibleCapturesOrCheck,

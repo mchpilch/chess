@@ -45,7 +45,7 @@ export class BoardView { // rendering
                     this.config //temp?
                 );
 
-                const color = (r + f) % 2 === 0 ? this.config.colorDark : this.config.colorLight;
+                const color = (r + f) % 2 === 0 ? this.config.colorLight : this.config.colorDark;
                 fieldView.draw(color);
 
                 rowView.push(fieldView);

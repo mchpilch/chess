@@ -10,8 +10,8 @@ export const boardConfig = {
     colorLight: '#e8d3b8',
 
 
-    strokeColorForDark: '#876e62ff', // todo with subSquares
-    strokeColorForLight: '#000000ff', // todo with subSquares
+    // strokeColorForDark: '#876e62ff', // todo with subSquares
+    // strokeColorForLight: '#000000ff', // todo with subSquares
 
     possibleMoveColorHighlight: '#0ed6ccff',
     possibleCheckColorHighlight: '#ffff00ff',

@@ -55,12 +55,15 @@ export class Game {
         //  const fenParser = new FenParser('r7/8/8/R7/8/8/8/8 w KQkq i3 0 1'); // only rook
         //  const fenParser = new FenParser('rnbqkbnr/8/8/8/8/8/8/RNBQKBNR w KQkq i3 0 1'); // starting pos
         //  const fenParser = new FenParser('rQQQQQQQr/Qnbqkbnr/QQQQQQQQ/QQQQQQQQ/QQQQQQQQ/QQQQQQQQ/QQQQQQQQ/QQQQQQQQ w - - 0 1'); // starting pos
-   const fenParser = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq i3 0 1'); // starting pos
+        //    const fenParser = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq i3 0 1'); // starting pos
         // const fenParser = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/1N1QKBNR w Kkq i3 0 1'); // testing
         // const fenParser = new FenParser('8/n/n7/4n3/8/3N4/4N3/8 w KQkq i3 0 1'); // Knights testing
         // const fenParser = new FenParser('4k3/8/8/8/8/8/4K3/8 w KQkq i3 0 1'); // Kings
         // const fenParser = new FenParser('4k3/8/4p3/8/8/8/8/4K3 b - - 0 1'); // all good here
         // const fenParser = new FenParser('rnb1kbnr/pppp1ppp/8/1B2p3/4P2q/8/PPPP1PPP/RNBQK1NR w KQkq - 2 3'); // check
+        // const fenParser = new FenParser('r1bq2nr/1ppk1ppp/2np4/p3p3/2B1P3/2NP1N2/PPPQ1PPP/R3K2R w KQ a6 0 9'); // castling  1
+        // const fenParser = new FenParser('r3knr1/1pp2ppp/2np4/p3p3/2B1P3/2NP1N2/PPPQ1PPP/R3K2R w KQ a6 0 9'); // castling  2
+        const fenParser = new FenParser('r3k2r/1pp2ppp/2np4/p3p3/2B1P3/2NP1N2/PPPQ1PPP/R3K2R w KQ a6 0 9'); // castling  2
         const fenBoard = fenParser.getFenBoard();
 
         const piecefactory = new PieceFactory();
@@ -70,6 +73,7 @@ export class Game {
 
         this.app.stage.interactive = true;
         this.app.stage.addChild(this.boardView.getBoard());
+
         const offsetX = boardConfig.offset.x;
         const offsetY = boardConfig.offset.y;
 
@@ -96,6 +100,5 @@ export class Game {
         }
 
         this.boardController.attachListenersToPieces();
-
     }
 }

@@ -124,7 +124,8 @@ export class BoardController {
         this.dragOriginFieldView = originFieldView;
 
         const { quietMoves, captures } = this.moveGenerator.calculateMoves(originField);
-
+        console.log('xxxxx quietMoves', quietMoves, 'captures', captures);
+        
         const piece = originField.getOccupiedBy()!;
         const originId = originField.getId();
 
@@ -183,6 +184,10 @@ export class BoardController {
             pieceView.visible = false; // later: consider if this is enough or should it be rm from stage completely
             this.boardState.removePieceFromStorage(piece);
         }
+
+        // if (isMoveCastling){
+
+        // }
 
         this.movePiece(pieceId, nearestFieldView);
         nearestField.setOccupiedBy(this.findPieceById(pieceId));

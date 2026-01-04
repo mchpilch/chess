@@ -17,8 +17,114 @@ export class MoveValidator {
     public isMoveLegal(piece: Piece, originFieldId: number, destinationFieldId: number): boolean {
 
         if (this.isKingAdjacencyViolation(piece, destinationFieldId) === true) return false;
+        if (this.isKingCastlingViolation(piece, originFieldId, destinationFieldId) === true) return false;
         if (this.leavesCurrentKingInCheck(piece, originFieldId, destinationFieldId) === true) return false; // Protects from moving pinned pieces
         return true;
+    }
+
+    private isKingCastlingViolation(movingPiece: Piece, originFieldId: number, destinationFieldId: number): boolean {
+
+        if (movingPiece.getRole() !== 'k') return false;
+
+        let isCurrentMoveCastling = this.isCurrentMoveCastling(movingPiece, originFieldId, destinationFieldId);
+        console.log('xxx isCurrentMoveCastling:', isCurrentMoveCastling);
+        
+        if (isCurrentMoveCastling === false) return false;
+
+        if (movingPiece.getHasMoved() === true) return true;
+
+        // King side castling for White
+        if (destinationFieldId === 6 || destinationFieldId === 7) {
+            console.log('xxxx King side castling for White');
+            let isH1RookMeetingConditions = this.isRookEligibleForCastling(7, 'w');
+
+            if (isH1RookMeetingConditions === false) {
+                return true;
+            }
+            // latter check if squares between are in check
+            // later check if squares beteen are empty
+        }
+
+        // King side castling for Black
+        if (destinationFieldId === 62 || destinationFieldId === 63) {
+            console.log('xxxx King side castling for Black');
+            let isH8RookMeetingConditions = this.isRookEligibleForCastling(63, 'b');
+
+            if (isH8RookMeetingConditions === false) {
+                return true;
+            }
+            // latter check if squares between are in check
+            // later check if squares beteen are empty
+        }
+
+        // Queen side castling for White 
+        if (destinationFieldId === 0 || destinationFieldId === 1 || destinationFieldId === 2) {
+            console.log('xxxx Queen side castling for White ');
+
+            let isA1RookMeetingConditions = this.isRookEligibleForCastling(0, 'w');
+
+            if (isA1RookMeetingConditions === false) {
+                console.log('xxx true', true);
+                return true;
+            }
+            // latter check if squares between are in check
+            // later check if squares beteen are empty
+        }
+
+        // Queen side castling for Black
+        if (destinationFieldId === 56 || destinationFieldId === 57 || destinationFieldId === 58) {
+            console.log('xxxx Queen side castling for Black');
+
+            let isA8RookMeetingConditions = this.isRookEligibleForCastling(56, 'b');
+
+            if (isA8RookMeetingConditions === false) {
+                return true;
+            }
+            // latter check if squares between are in check
+            // later check if squares beteen are empty
+        }
+        return false;
+    }
+
+    private isCurrentMoveCastling(movingPiece: Piece, originFieldId: number, destinationFieldId: number): boolean {
+        console.log('xxxx isCurrentMoveCastling? destinationFieldId:', destinationFieldId);
+        
+        if (movingPiece.getColor() === 'w') {
+            if (originFieldId === 4 && (
+                destinationFieldId === 0 ||
+                destinationFieldId === 1 ||
+                destinationFieldId === 2 ||
+                destinationFieldId === 6 ||
+                destinationFieldId === 7
+            )) {
+                return true;
+            }
+        } else {
+            if (originFieldId === 60 &&(
+                destinationFieldId === 56 ||
+                destinationFieldId === 57 ||
+                destinationFieldId === 58 ||
+                destinationFieldId === 62 ||
+                destinationFieldId === 63
+            )) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private isRookEligibleForCastling(
+        rookFieldId: number,
+        color: 'w' | 'b'
+    ): boolean {
+        const rook = this.boardState.getFieldById(rookFieldId).getOccupiedBy();
+        let isEligable = (
+            rook?.getRole() === 'r' &&
+            rook?.getColor() === color &&
+            rook?.getHasMoved() === false
+        );
+        console.log(`xxx rook at ${rookFieldId} is ${isEligable ? 'eligable' : 'not eligable'} for castling`);
+        return isEligable;
     }
 
     private leavesCurrentKingInCheck(piece: Piece, originFieldId: number, destinationFieldId: number): boolean {
@@ -28,7 +134,7 @@ export class MoveValidator {
 
         // Save for future rollback
         const residentOfDestinationField = destinationField.getOccupiedBy(); // Can be null or a piece
-        console.log('xxx residentOfDestinationField', residentOfDestinationField);
+        // console.log('xxx residentOfDestinationField', residentOfDestinationField);
 
         originField.setOccupiedBy(null);
         destinationField.setOccupiedBy(piece);
@@ -39,7 +145,7 @@ export class MoveValidator {
         // Rollback 
         destinationField.setOccupiedBy(residentOfDestinationField); // piece or null
         originField.setOccupiedBy(piece);
-        console.log('xxx Leaves current king in check? : ', isInCheck);
+        // console.log('xxx Leaves current king in check? : ', isInCheck);
 
         return isInCheck;
     }
@@ -48,7 +154,7 @@ export class MoveValidator {
 
         const list = this.boardState.getPiecesByColor(color);
 
-        let currentKing = list.find(piece => piece.getRole() === 'k'); 
+        let currentKing = list.find(piece => piece.getRole() === 'k');
         let currentKingField = this.boardState.getFieldByPiece(currentKing!);
 
         const attackedByColor = color === 'w' ? 'b' : 'w';
@@ -71,7 +177,7 @@ export class MoveValidator {
         return false;
     }
 
-    private isKingAdjacencyViolation(movingPiece: Piece, destinationFieldId: number): boolean { 
+    private isKingAdjacencyViolation(movingPiece: Piece, destinationFieldId: number): boolean {
         // There has to be at leat one row and one column of difference between kings
         if (movingPiece.getRole() !== 'k') return false;
 
