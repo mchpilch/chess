@@ -2,7 +2,7 @@
 
 Chess game implementation using **PIXI.js** and **TypeScript**.
 
-> Project status: in early development 🚧
+> Project status: in development 🚧
 
 ## Overview
 
@@ -23,6 +23,8 @@ The project is intentionally built **from scratch**, without external chess libr
 - Drag & drop interaction ✅
 - Highlighting of possible moves and captures ✅
 - Turn management ✅
+- Checks ✅
+- Castling ✅
 
 ## Architecture
 
@@ -57,8 +59,7 @@ Then open the local development server displayed in the console.
 ## Roadmap (todo)
 
 ### Core chess rules
-- Implement full move legality (check, check avoidance)
-- Castling, promotion, en passant
+- Promotion, en passant
 
 ### Game features
 - Game clocks
