@@ -145,7 +145,7 @@ export class BoardController {
 
         const legalCastlingMoves = castlingMoves?.filter(moveDestination =>
             this.moveValidator.isMoveLegal(piece, originId, moveDestination)
-        );
+        );        
 
         this.boardView.highlightFields(legalQuietMoves, legalCaptures, legalCastlingMoves ?? []);
         this.currentPossibleMovesForDraggedPiece = [...legalQuietMoves, ...legalCaptures, ...legalCastlingMoves ?? []];

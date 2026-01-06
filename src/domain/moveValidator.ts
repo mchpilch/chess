@@ -100,13 +100,14 @@ export class MoveValidator {
         return false;
     }
 
-    private isPieceInTheWayOfCastling(destinationFieldId: number, movingPiece: Piece): boolean {
+    private isKingUnderAttackDuringCastling(destinationFieldId: number, movingPiece: Piece): boolean {
 
         const squaresToCheckByDestination: Record<number, number[]> = {
-            6: [5, 6],        // White king side
-            62: [61, 62],      // Black king side
-            2: [1, 2, 3],     // White queen side
-            58: [57, 58, 59],  // Black queen side
+
+            6: [4, 5, 6],        // White king side
+            62: [60, 61, 62],      // Black king side
+            2: [1, 2, 3, 4],     // White queen side
+            58: [57, 58, 59, 60],  // Black queen side
         };
 
         let squaresToCheck = squaresToCheckByDestination[destinationFieldId];
@@ -121,13 +122,14 @@ export class MoveValidator {
         return false;
     }
 
-    private isKingUnderAttackDuringCastling(destinationFieldId: number, movingPiece: Piece): boolean {
+    private isPieceInTheWayOfCastling(destinationFieldId: number, movingPiece: Piece): boolean {
 
         const squaresToCheckByDestination: Record<number, number[]> = {
-            6: [4, 5, 6],        // White king side
-            62: [60, 61, 62],      // Black king side
-            2: [1, 2, 3, 4],     // White queen side
-            58: [57, 58, 59, 60],  // Black queen side
+
+            6: [5, 6],        // White king side
+            62: [61, 62],      // Black king side
+            2: [1, 2, 3],     // White queen side
+            58: [57, 58, 59],  // Black queen side
         };
 
         let squaresToCheck = squaresToCheckByDestination[destinationFieldId];
