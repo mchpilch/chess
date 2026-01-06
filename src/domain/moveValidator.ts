@@ -27,7 +27,6 @@ export class MoveValidator {
         if (movingPiece.getRole() !== 'k') return false;
 
         let isCurrentMoveCastling = this.isCurrentMoveCastling(movingPiece, originFieldId, destinationFieldId);
-        console.log('xxx isCurrentMoveCastling:', isCurrentMoveCastling);
 
         if (isCurrentMoveCastling === false) return false;
 
@@ -44,14 +43,14 @@ export class MoveValidator {
         if (this.isKingUnderAttackDuringCastling(destinationFieldId, movingPiece) === true) {
             return true;
         }
-      
+
         return false;
     }
 
     private checkRooksConditionsForCastling(destinationFieldId: number): boolean {
         // King side castling for White
         if (destinationFieldId === 6) {
-            console.log('xxxx King side castling for White');
+
             let isH1RookMeetingConditions = this.isRookEligibleForCastling(7, 'w');
 
             if (isH1RookMeetingConditions === false) {
@@ -63,7 +62,7 @@ export class MoveValidator {
 
         // King side castling for Black
         if (destinationFieldId === 62) {
-            console.log('xxxx King side castling for Black');
+
             let isH8RookMeetingConditions = this.isRookEligibleForCastling(63, 'b');
 
             if (isH8RookMeetingConditions === false) {
@@ -75,12 +74,11 @@ export class MoveValidator {
 
         // Queen side castling for White 
         if (destinationFieldId === 2) {
-            console.log('xxxx Queen side castling for White ');
 
             let isA1RookMeetingConditions = this.isRookEligibleForCastling(0, 'w');
 
             if (isA1RookMeetingConditions === false) {
-                console.log('xxx true', true);
+
                 return true;
             }
             // latter check if squares between are in check
@@ -89,7 +87,6 @@ export class MoveValidator {
 
         // Queen side castling for Black
         if (destinationFieldId === 58) {
-            console.log('xxxx Queen side castling for Black');
 
             let isA8RookMeetingConditions = this.isRookEligibleForCastling(56, 'b');
 
@@ -113,7 +110,6 @@ export class MoveValidator {
         };
 
         let squaresToCheck = squaresToCheckByDestination[destinationFieldId];
-        console.log('zzz squaresToCheck for castling:', squaresToCheck);
 
         for (const squareId of squaresToCheck) {
 
@@ -128,14 +124,13 @@ export class MoveValidator {
     private isKingUnderAttackDuringCastling(destinationFieldId: number, movingPiece: Piece): boolean {
 
         const squaresToCheckByDestination: Record<number, number[]> = {
-            6: [5, 6],        // White king side
-            62: [61, 62],      // Black king side
-            2: [1, 2, 3],     // White queen side
-            58: [57, 58, 59],  // Black queen side
+            6: [4, 5, 6],        // White king side
+            62: [60, 61, 62],      // Black king side
+            2: [1, 2, 3, 4],     // White queen side
+            58: [57, 58, 59, 60],  // Black queen side
         };
 
         let squaresToCheck = squaresToCheckByDestination[destinationFieldId];
-        console.log('zzz squaresToCheck for castling:', squaresToCheck);
 
         for (const squareId of squaresToCheck) {
 
@@ -148,7 +143,6 @@ export class MoveValidator {
     }
 
     private isCurrentMoveCastling(movingPiece: Piece, originFieldId: number, destinationFieldId: number): boolean {
-        console.log('xxxx isCurrentMoveCastling? destinationFieldId:', destinationFieldId);
 
         if (movingPiece.getColor() === 'w') {
             if (originFieldId === 4 && (
@@ -176,7 +170,6 @@ export class MoveValidator {
             rook?.getColor() === color &&
             rook?.getHasMoved() === false
         );
-        console.log(`xxx rook at ${rookFieldId} is ${isEligable ? 'eligable' : 'not eligable'} for castling`);
         return isEligable;
     }
 
@@ -187,7 +180,6 @@ export class MoveValidator {
 
         // Save for future rollback
         const residentOfDestinationField = destinationField.getOccupiedBy(); // Can be null or a piece
-        // console.log('xxx residentOfDestinationField', residentOfDestinationField);
 
         originField.setOccupiedBy(null);
         destinationField.setOccupiedBy(piece);
@@ -198,7 +190,6 @@ export class MoveValidator {
         // Rollback 
         destinationField.setOccupiedBy(residentOfDestinationField); // piece or null
         originField.setOccupiedBy(piece);
-        // console.log('xxx Leaves current king in check? : ', isInCheck);
 
         return isInCheck;
     }

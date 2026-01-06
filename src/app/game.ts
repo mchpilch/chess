@@ -52,9 +52,9 @@ export class Game {
         // const fenParser = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
         // const fenParser = new FenParser('r1bk3r/p2pBpNp/n4n2/1p1NP2P/6P1/3P4/P1P1K3/q5b1 w KQkq - 0 1');
         // const fenParser = new FenParser('4k2r/6r1/8/8/8/8/3R4/R3K3 w Qk - 0 1');
-        //  const fenParser = new FenParser('r7/8/8/R7/8/8/8/8 w KQkq i3 0 1'); // only rook
-        //  const fenParser = new FenParser('rnbqkbnr/8/8/8/8/8/8/RNBQKBNR w KQkq i3 0 1'); // starting pos
-        //  const fenParser = new FenParser('rQQQQQQQr/Qnbqkbnr/QQQQQQQQ/QQQQQQQQ/QQQQQQQQ/QQQQQQQQ/QQQQQQQQ/QQQQQQQQ w - - 0 1'); // starting pos
+        // const fenParser = new FenParser('r7/8/8/R7/8/8/8/8 w KQkq i3 0 1'); // only rook
+        // const fenParser = new FenParser('rnbqkbnr/8/8/8/8/8/8/RNBQKBNR w KQkq i3 0 1'); // starting pos
+        // const fenParser = new FenParser('rQQQQQQQr/Qnbqkbnr/QQQQQQQQ/QQQQQQQQ/QQQQQQQQ/QQQQQQQQ/QQQQQQQQ/QQQQQQQQ w - - 0 1'); // starting pos
         // const fenParser = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/1N1QKBNR w Kkq i3 0 1'); // testing
         // const fenParser = new FenParser('8/n/n7/4n3/8/3N4/4N3/8 w KQkq i3 0 1'); // Knights testing
         // const fenParser = new FenParser('4k3/8/8/8/8/8/4K3/8 w KQkq i3 0 1'); // Kings
@@ -63,9 +63,10 @@ export class Game {
         // const fenParser = new FenParser('r1bq2nr/1ppk1ppp/2np4/p3p3/2B1P3/2NP1N2/PPPQ1PPP/R3K2R w KQ a6 0 9'); // castling  1
         // const fenParser = new FenParser('r3knr1/1pp2ppp/2np4/p3p3/2B1P3/2NP1N2/PPPQ1PPP/R3K2R w KQ a6 0 9'); // castling  2
         // const fenParser = new FenParser('r3k2r/1pp2ppp/2np4/p3p3/2B1P3/2NP1N2/PPPQ1PPP/R3K2R w KQ a6 0 9'); // castling  3
-        const fenParser = new FenParser('r3k1nr/p1pqbppp/Bp1p4/P3p1N1/1n2b3/1PN3P1/2PP1P1P/R1BQK2R b KQkq - 2 10'); // castling 4 path violation checks 
+        // const fenParser = new FenParser('r3k1nr/p1pqbppp/Bp1p4/P3p1N1/1n2b3/1PN3P1/2PP1P1P/R1BQK2R b KQkq - 2 10'); // castling 4 path violation checks 
+        // const fenParser = new FenParser('r3k1nr/p1p1bppp/Bp1pq3/P2nN1/1n2b3/1PN3P1/2PP1P1P/R1BQK2R b KQkq - 2 10'); // castling 5 king in check in one move 
 
-        // const fenParser = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq i3 0 1'); // starting pos
+        const fenParser = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq i3 0 1'); // starting pos
 
         const fenBoard = fenParser.getFenBoard();
 
