@@ -65,7 +65,7 @@ export class BoardView { // rendering
 
     public getBoard(): Container { return this.boardView; }
 
-    public highlightFields(possibleQuietMoves: number[], possibleCaptures: number[]): void { // , possibleCheck: number
+    public highlightFields(possibleQuietMoves: number[], possibleCaptures: number[], legalCastlingMoves: number[]): void { // , possibleCheck: number
 
         const fillFieldWithColor = (fieldView: FieldView, color: string) => {
 
@@ -84,6 +84,11 @@ export class BoardView { // rendering
                 if (possibleCaptures.includes(fieldView.getId())) {
 
                     fillFieldWithColor(fieldView, this.config.captureColorHighlight);
+                }
+
+                if (legalCastlingMoves.includes(fieldView.getId())) {
+
+                    fillFieldWithColor(fieldView, this.config.castlingMoveHighlight);
                 }
 
             }
@@ -119,6 +124,16 @@ export class BoardView { // rendering
         return this.pieceViews.get(id);
     }
 
+    public getPieceViewAtField(fieldId: number): PieceView | undefined {
+        for (const pieceView of this.pieceViews.values()) {
+            if (pieceView.getFieldId() === fieldId) {
+                return pieceView;
+            }
+        }
+        return undefined;
+    }
+
+
     private generateGrid() {
 
         const grid = new Graphics();
@@ -130,16 +145,16 @@ export class BoardView { // rendering
 
             grid // Move to top of each line 
                 .moveTo(offset.x + i * squareWidth, offset.x + 0)
-                 // Draw down to bottom
+                // Draw down to bottom
                 .lineTo(offset.x + i * squareWidth, offset.x + squareWidth * numberOfFiles);
         }
 
         // Draw horizontal lines
         for (let i = 0; i < numberOfRows + 1; i++) {
-            
+
             grid // Move to start of each line
                 .moveTo(offset.y + 0, offset.y + i * squareWidth)
-                 // Draw across to end
+                // Draw across to end
                 .lineTo(offset.y + squareWidth * numberOfRows, offset.y + i * squareWidth);
         }
 

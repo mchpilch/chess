@@ -1,4 +1,4 @@
-import { MoveResult } from "../commonTypes/tsTypes";
+import { MoveIDsByType } from "../commonTypes/tsTypes";
 import { BoardState } from "./boardState";
 import { MoveGenerator } from "./moveGenerator";
 import { Piece } from "./piece";
@@ -28,7 +28,7 @@ export class MoveValidator {
 
         let isCurrentMoveCastling = this.isCurrentMoveCastling(movingPiece, originFieldId, destinationFieldId);
         console.log('xxx isCurrentMoveCastling:', isCurrentMoveCastling);
-        
+
         if (isCurrentMoveCastling === false) return false;
 
         if (movingPiece.getHasMoved() === true) return true;
@@ -88,24 +88,16 @@ export class MoveValidator {
 
     private isCurrentMoveCastling(movingPiece: Piece, originFieldId: number, destinationFieldId: number): boolean {
         console.log('xxxx isCurrentMoveCastling? destinationFieldId:', destinationFieldId);
-        
+
         if (movingPiece.getColor() === 'w') {
             if (originFieldId === 4 && (
-                destinationFieldId === 0 ||
-                destinationFieldId === 1 ||
-                destinationFieldId === 2 ||
-                destinationFieldId === 6 ||
-                destinationFieldId === 7
+                destinationFieldId === 2 || destinationFieldId === 6
             )) {
                 return true;
             }
         } else {
-            if (originFieldId === 60 &&(
-                destinationFieldId === 56 ||
-                destinationFieldId === 57 ||
-                destinationFieldId === 58 ||
-                destinationFieldId === 62 ||
-                destinationFieldId === 63
+            if (originFieldId === 60 && (
+                destinationFieldId === 58 || destinationFieldId === 62
             )) {
                 return true;
             }
@@ -169,7 +161,7 @@ export class MoveValidator {
 
         for (const piece of enemyPieces) {
 
-            const moves: MoveResult = this.moveGenerator.calculateMovesByPiece(piece);
+            const moves: MoveIDsByType = this.moveGenerator.calculateMovesByPiece(piece);
             if (moves.captures.includes(fieldId) || moves.quietMoves.includes(fieldId)) {
                 return true;
             }

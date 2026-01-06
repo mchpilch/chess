@@ -38,8 +38,9 @@
 
     // I tried added strokes to fields but offsets are problematic, as strokes are centered on the path so 1/2 stroke inside the rect and other 1/2 outside - not looking good, instead tried:
     // https://pixijs.com/8.x/guides/components/scene-objects/graphics/graphics-pixel-line#why-use-pixelline but here only one color can be applied to the whole structure.
-    // Final soltuion is to draw grpahic inside graphic for each square but this grid can stay as an visual option, flag added in boardConfig
+    // todo Final soltuion is to draw grpahic inside graphic for each square but this grid can stay as an visual option, flag added in boardConfig
 
+    // https://martinfowler.com/eaaCatalog/identityMap.html ??? pieceViwe and fieldView??? 
 
 //---------------CHESS:-------------------
 

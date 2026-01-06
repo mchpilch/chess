@@ -14,6 +14,7 @@ export const boardConfig = {
     // strokeColorForLight: '#000000ff', // todo with subSquares
 
     possibleMoveColorHighlight: '#0ed6ccff',
+    castlingMoveHighlight: '#b0ffeeff',
     possibleCheckColorHighlight: '#ffff00ff',
     captureColorHighlight: '#bd3ab9ff',
     // colorLight: '#4b734eff',

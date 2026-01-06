@@ -1,4 +1,4 @@
-import { MoveResult } from "../commonTypes/tsTypes";
+import { MoveIDsByType } from "../commonTypes/tsTypes";
 import { BoardState } from "./boardState";
 import { Field } from "./field";
 import { Piece } from "./piece";
@@ -42,11 +42,11 @@ export class MoveGenerator {
         this.boardState = boardState;
     }
 
-    public calculateMoves(originField: Field): MoveResult {
+    public calculateMoves(originField: Field): MoveIDsByType {
 
         const piece = originField.getOccupiedBy();
         if (!piece) {
-            return { quietMoves: [], captures: [] };
+            return { quietMoves: [], captures: [], castlingMoves: [] };
         }
 
         const role = piece.getRole();
@@ -73,7 +73,7 @@ export class MoveGenerator {
         return { quietMoves: [], captures: [] };
     }
 
-    public calculateMovesByPiece(piece: Piece): MoveResult {
+    public calculateMovesByPiece(piece: Piece): MoveIDsByType {
 
         const originField = this.boardState.getFieldByPiece(piece);
 
@@ -84,7 +84,7 @@ export class MoveGenerator {
     }
 
     // QUEEN / ROOK / BISHOP
-    private calculatePossibleMovesForSlidingPiece(originField: Field, pieceType: SlidingPiece): MoveResult {
+    private calculatePossibleMovesForSlidingPiece(originField: Field, pieceType: SlidingPiece): MoveIDsByType {
 
         const originID = originField.getId();
 
@@ -149,7 +149,7 @@ export class MoveGenerator {
     }
 
     // KNIGHT
-    private calculatePossibleMovesForKnight(originField: Field): MoveResult {
+    private calculatePossibleMovesForKnight(originField: Field): MoveIDsByType {
 
         const originID = originField.getId();
 
@@ -198,7 +198,7 @@ export class MoveGenerator {
     }
 
     // PAWN
-    private calculatePossibleMovesForPawn(originField: Field): MoveResult {
+    private calculatePossibleMovesForPawn(originField: Field): MoveIDsByType {
 
         const originID = originField.getId();
         const pawn = originField.getOccupiedBy()!;
@@ -268,7 +268,7 @@ export class MoveGenerator {
     }
 
     // KING
-    private calculatePossibleMovesForKing(originField: Field): MoveResult {
+    private calculatePossibleMovesForKing(originField: Field): MoveIDsByType {
 
         const originID = originField.getId();
         const king = originField.getOccupiedBy()!;
@@ -277,9 +277,8 @@ export class MoveGenerator {
         const possibleQuietMoves: number[] = [];
         const possibleCapturesOrCheck: number[] = [];
 
-        const castlingOffsets = [-4, -3, -2, 2, 3]; // queen side / king side // [-4, -3, -2, 2, 3];
         const regularOffsets = [-9, -8, -7, -1, 1, 7, 8, 9];
-        const kingOffsets = [...regularOffsets, ...castlingOffsets];
+        const kingOffsets = [...regularOffsets];
 
         const originFile = this.boardState.getFileById(originID);
         const originRow = this.boardState.getRowById(originID);
@@ -295,9 +294,8 @@ export class MoveGenerator {
             const targetFile = this.boardState.getFileById(targetID);
             const targetRow = this.boardState.getRowById(targetID);
 
-            // prevent wrapping (king moves max 1 file + 1 rank) - for castling max 2 files
             if (
-                Math.abs(targetFile - originFile) > 4 || // castling piece drop possibilities )
+                Math.abs(targetFile - originFile) > 1 ||
                 Math.abs(targetRow - originRow) > 1
             ) {
                 continue;
@@ -312,13 +310,34 @@ export class MoveGenerator {
                 possibleCapturesOrCheck.push(targetID);
             }
         }
-        console.log('xxxx possibleQuietMoves', possibleQuietMoves );
-        
-        // castling possiblities
+
         return {
             quietMoves: possibleQuietMoves,
             captures: possibleCapturesOrCheck,
+            castlingMoves: this.collectCastlingMoves(originID, king),
         };
+    }
+
+    private collectCastlingMoves(originID: number, king: Piece): number[] {
+
+        if (king.getHasMoved()) return [];
+
+        let castlingMoves: number[] = [];
+        const color = king.getColor();
+
+        // White king on e1
+        if (color === 'w' && originID === 4) {
+            castlingMoves.push(2); // c1
+            castlingMoves.push(6); // g1
+        }
+
+        // Black king on e8
+        if (color === 'b' && originID === 60) {
+            castlingMoves.push(58); // c8
+            castlingMoves.push(62); // g8
+        }
+
+        return castlingMoves;
     }
 
 }
