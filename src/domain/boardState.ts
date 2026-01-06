@@ -58,4 +58,29 @@ export class BoardState {
         }
     }
 
+    private printBoardStateArray(): void { // for debug purposes, printes board to console with FEN like pieces
+
+        const rows = 8;
+        const cols = 8;
+
+        const boardStateArray: (string | null)[][] = [];
+
+        for (let i = 0; i < rows; i++) {
+            boardStateArray.push(Array(cols).fill(null));
+        }
+
+
+        for (let row of this.fields) {
+            for (let field of row) {
+                const occupiedBy = field.getOccupiedBy();
+                if (occupiedBy !== null) {
+                    let isWhite = occupiedBy.getColor() === 'w';
+                    boardStateArray[7 - Math.floor(field.getId() / 8)][field.getId() % 8] = isWhite ? occupiedBy.getRole().toUpperCase() : occupiedBy.getRole().toLowerCase();
+                }
+            }
+
+        }
+        console.log('Debug Info: boardStateArray', boardStateArray);
+    }
+
 }

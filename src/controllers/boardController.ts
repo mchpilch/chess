@@ -305,8 +305,10 @@ export class BoardController {
         );
 
         this.movePiece(rook?.getId()!, rookDestinationFieldView);
+        this.boardState.getFieldById(rookCurrentFieldId).setOccupiedBy(null); // state reflects that rook left its original square
         rookDestinationField.setOccupiedBy(rook); // set state of new destination to have the rook and from previus delete rook
         rookDestinationField.getOccupiedBy()!.markMoved();
+       
     }
 
     private findNearestFieldId(px: number, py: number): number | null {
