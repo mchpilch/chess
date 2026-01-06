@@ -33,8 +33,24 @@ export class MoveValidator {
 
         if (movingPiece.getHasMoved() === true) return true;
 
+        if (this.checkRooksConditionsForCastling(destinationFieldId) === true) {
+            return true;
+        }
+
+        if (this.isPieceInTheWayOfCastling(destinationFieldId, movingPiece) === true) {
+            return true;
+        }
+
+        if (this.isKingUnderAttackDuringCastling(destinationFieldId, movingPiece) === true) {
+            return true;
+        }
+      
+        return false;
+    }
+
+    private checkRooksConditionsForCastling(destinationFieldId: number): boolean {
         // King side castling for White
-        if (destinationFieldId === 6 || destinationFieldId === 7) {
+        if (destinationFieldId === 6) {
             console.log('xxxx King side castling for White');
             let isH1RookMeetingConditions = this.isRookEligibleForCastling(7, 'w');
 
@@ -46,7 +62,7 @@ export class MoveValidator {
         }
 
         // King side castling for Black
-        if (destinationFieldId === 62 || destinationFieldId === 63) {
+        if (destinationFieldId === 62) {
             console.log('xxxx King side castling for Black');
             let isH8RookMeetingConditions = this.isRookEligibleForCastling(63, 'b');
 
@@ -58,7 +74,7 @@ export class MoveValidator {
         }
 
         // Queen side castling for White 
-        if (destinationFieldId === 0 || destinationFieldId === 1 || destinationFieldId === 2) {
+        if (destinationFieldId === 2) {
             console.log('xxxx Queen side castling for White ');
 
             let isA1RookMeetingConditions = this.isRookEligibleForCastling(0, 'w');
@@ -72,7 +88,7 @@ export class MoveValidator {
         }
 
         // Queen side castling for Black
-        if (destinationFieldId === 56 || destinationFieldId === 57 || destinationFieldId === 58) {
+        if (destinationFieldId === 58) {
             console.log('xxxx Queen side castling for Black');
 
             let isA8RookMeetingConditions = this.isRookEligibleForCastling(56, 'b');
@@ -83,6 +99,51 @@ export class MoveValidator {
             // latter check if squares between are in check
             // later check if squares beteen are empty
         }
+
+        return false;
+    }
+
+    private isPieceInTheWayOfCastling(destinationFieldId: number, movingPiece: Piece): boolean {
+
+        const squaresToCheckByDestination: Record<number, number[]> = {
+            6: [5, 6],        // White king side
+            62: [61, 62],      // Black king side
+            2: [1, 2, 3],     // White queen side
+            58: [57, 58, 59],  // Black queen side
+        };
+
+        let squaresToCheck = squaresToCheckByDestination[destinationFieldId];
+        console.log('zzz squaresToCheck for castling:', squaresToCheck);
+
+        for (const squareId of squaresToCheck) {
+
+            if (this.isSquareAttackedOrControlled(squareId, movingPiece.getColor() === 'w' ? 'b' : 'w') === true) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private isKingUnderAttackDuringCastling(destinationFieldId: number, movingPiece: Piece): boolean {
+
+        const squaresToCheckByDestination: Record<number, number[]> = {
+            6: [5, 6],        // White king side
+            62: [61, 62],      // Black king side
+            2: [1, 2, 3],     // White queen side
+            58: [57, 58, 59],  // Black queen side
+        };
+
+        let squaresToCheck = squaresToCheckByDestination[destinationFieldId];
+        console.log('zzz squaresToCheck for castling:', squaresToCheck);
+
+        for (const squareId of squaresToCheck) {
+
+            if (this.boardState.getFieldById(squareId).getOccupiedBy() !== null) {
+                return true;
+            }
+        }
+
         return false;
     }
 

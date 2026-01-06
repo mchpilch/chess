@@ -60,3 +60,5 @@
     // rnbqkbnr/ppp4p/8/3p1pp1/PP1PpPPP/8/2P1P3/RNBQKBNR b KQkq g3 0 6
     
     // En passant can only be captured on the very next move after the pawn advances two squares. So only one possible, not even two per color. Just one. Good easier to handle.
+
+    // https://en.wikipedia.org/w/index.php?title=Castling&oldid=604146415 - so king cannot pass the sqaure attack by enemy but rook can be under attack when castling no problem if king is save

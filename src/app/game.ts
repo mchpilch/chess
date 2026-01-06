@@ -62,9 +62,10 @@ export class Game {
         // const fenParser = new FenParser('rnb1kbnr/pppp1ppp/8/1B2p3/4P2q/8/PPPP1PPP/RNBQK1NR w KQkq - 2 3'); // check
         // const fenParser = new FenParser('r1bq2nr/1ppk1ppp/2np4/p3p3/2B1P3/2NP1N2/PPPQ1PPP/R3K2R w KQ a6 0 9'); // castling  1
         // const fenParser = new FenParser('r3knr1/1pp2ppp/2np4/p3p3/2B1P3/2NP1N2/PPPQ1PPP/R3K2R w KQ a6 0 9'); // castling  2
-        // const fenParser = new FenParser('r3k2r/1pp2ppp/2np4/p3p3/2B1P3/2NP1N2/PPPQ1PPP/R3K2R w KQ a6 0 9'); // castling  2
+        // const fenParser = new FenParser('r3k2r/1pp2ppp/2np4/p3p3/2B1P3/2NP1N2/PPPQ1PPP/R3K2R w KQ a6 0 9'); // castling  3
+        const fenParser = new FenParser('r3k1nr/p1pqbppp/Bp1p4/P3p1N1/1n2b3/1PN3P1/2PP1P1P/R1BQK2R b KQkq - 2 10'); // castling 4 path violation checks 
 
-        const fenParser = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq i3 0 1'); // starting pos
+        // const fenParser = new FenParser('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq i3 0 1'); // starting pos
 
         const fenBoard = fenParser.getFenBoard();
 
