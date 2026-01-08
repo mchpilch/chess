@@ -8,17 +8,12 @@ import { BoardView } from "../views/boardView";
 import { MoveGenerator } from "../domain/moveGenerator";
 import { MoveValidator } from "../domain/moveValidator";
 import { boardConfig } from "../configs/boardConfig";
+import { CastlingIntent } from "../commonTypes/tsTypes";
 /*** 
  * Board - class responsible for controlling flow. Orchestrator. 
  * Merges boardView, boardState and MoveGeneration by calling subslasses.
 */
 
-enum Castling {
-    WHITE_KING_SIDE,
-    BLACK_KING_SIDE,
-    WHITE_QUEEN_SIDE,
-    BLACK_QUEEN_SIDE,
-}
 export class BoardController {
 
     private fields!: Field[][];
@@ -145,7 +140,7 @@ export class BoardController {
 
         const legalCastlingMoves = castlingMoves?.filter(moveDestination =>
             this.moveValidator.isMoveLegal(piece, originId, moveDestination)
-        );        
+        );
 
         this.boardView.highlightFields(legalQuietMoves, legalCaptures, legalCastlingMoves ?? []);
         this.currentPossibleMovesForDraggedPiece = [...legalQuietMoves, ...legalCaptures, ...legalCastlingMoves ?? []];
@@ -156,7 +151,7 @@ export class BoardController {
         let nearestFieldId = this.findNearestFieldId(x, y); // GameSense change: not const anymore as castling may change it for example, put king on h8 means black kingside castling so actually move to g8
         // console.log('Debug Info: HandlePieceDrop: pieceID', pieceId, 'nearestFieldId', nearestFieldId);
 
-        if (nearestFieldId === null) {
+        if (nearestFieldId === null || pieceId === null) {
 
             this.dragOriginField = null;
             this.dragOriginFieldView = null;
@@ -169,40 +164,18 @@ export class BoardController {
         this.boardView.turnOffHighlights();
 
         // castling intent
-        let isCaslingIntent = false;
+        // let isCaslingIntent = false;
         let piece = this.findPieceById(pieceId);
+        if (piece === null) return;
+        // detect castling intent
+        const castling = this.detectCastlingIntent(piece, nearestFieldId);
 
-        if (piece?.getRole() === 'k') {
+        if (castling.isCastlingIntent === true) {
+            const { desiredKingDestinationId } = castling;
 
-            if (piece?.getColor() === 'w') {
-                if (nearestFieldId === 0 || nearestFieldId === 1 || nearestFieldId === 2) {
-
-                    nearestFieldId = 2;
-                    nearestField = this.boardState.getFieldById(nearestFieldId);
-                    nearestFieldView = this.boardView.getFieldViewById(nearestFieldId);
-                    isCaslingIntent = true;
-                } else if (nearestFieldId === 6 || nearestFieldId === 7) {
-
-                    nearestFieldId = 6;
-                    nearestField = this.boardState.getFieldById(nearestFieldId);
-                    nearestFieldView = this.boardView.getFieldViewById(nearestFieldId);
-                    isCaslingIntent = true;
-                }
-            } else {
-                if (nearestFieldId === 56 || nearestFieldId === 57 || nearestFieldId === 58) {
-
-                    nearestFieldId = 58;
-                    nearestField = this.boardState.getFieldById(nearestFieldId);
-                    nearestFieldView = this.boardView.getFieldViewById(nearestFieldId);
-                    isCaslingIntent = true;
-                } else if (nearestFieldId === 62 || nearestFieldId === 63) {
-
-                    nearestFieldId = 62;
-                    nearestField = this.boardState.getFieldById(nearestFieldId);
-                    nearestFieldView = this.boardView.getFieldViewById(nearestFieldId);
-                    isCaslingIntent = true;
-                }
-            }
+            nearestFieldId = desiredKingDestinationId;
+            nearestField = this.boardState.getFieldById(nearestFieldId);
+            nearestFieldView = this.boardView.getFieldViewById(nearestFieldId);
         }
 
         let isMoveToStartingSquare = nearestField.getOccupiedBy()?.getId() === pieceId;
@@ -215,7 +188,7 @@ export class BoardController {
             this.snapBackPieceToOrigin(pieceId);
             return;
         }
-        if (isMoveToWrongColor === true && isCaslingIntent === false) {
+        if (isMoveToWrongColor === true && castling.isCastlingIntent === false) {
             if (this.dragOriginField === null) return;
             // block
             this.snapBackPieceToOrigin(pieceId);
@@ -242,10 +215,49 @@ export class BoardController {
         nearestField.setOccupiedBy(this.findPieceById(pieceId));
         nearestField.getOccupiedBy()!.markMoved();
 
-        if (isCaslingIntent === true) {
+        if (castling.isCastlingIntent === true) {
             // in future play castling gsap animation but for now move rook
             this.moveRookForCastling(nearestFieldView.getId());
         }
+
+        this.finalizeTurn();
+
+    }
+
+    private detectCastlingIntent(piece: Piece, droppedFieldId: number): CastlingIntent {
+
+        if (piece.getRole() !== 'k') {
+            return { isCastlingIntent: false };
+        }
+
+        const isWhite = piece.getColor() === 'w';
+
+        const rules = isWhite
+            ? [
+                { fields: [0, 1, 2], target: 2, },
+                { fields: [6, 7], target: 6 },
+            ]
+            : [
+                { fields: [56, 57, 58], target: 58 },
+                { fields: [62, 63], target: 62 },
+            ];
+
+
+        const match = rules.find(rule =>
+            rule.fields.includes(droppedFieldId)
+        );
+
+        if (!match) {
+            return { isCastlingIntent: false };
+        }
+
+        return {
+            isCastlingIntent: true,
+            desiredKingDestinationId: match.target,
+        };
+    }
+
+    private finalizeTurn(): void {
 
         this.gameState.incrementMoveCount();
         this.gameState.setNextTurn();
@@ -254,7 +266,6 @@ export class BoardController {
 
         this.handleInteractivnessOfPiecesOnBoard();
         this.dragOriginField = null;
-        isCaslingIntent = false; // make glaobal to reset //todo
     }
 
     private moveRookForCastling(currentKingFieldViewId: number): void {
