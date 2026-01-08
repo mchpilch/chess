@@ -148,7 +148,7 @@ export class BoardController {
 
     private handlePieceDrop({ pieceId, x, y }: { pieceId: number; x: number; y: number }): void {
 
-        let nearestFieldId = this.findNearestFieldId(x, y); // GameSense change: not const anymore as castling may change it for example, put king on h8 means black kingside castling so actually move to g8
+        let nearestFieldId = this.findNearestFieldId(x, y);
         // console.log('Debug Info: HandlePieceDrop: pieceID', pieceId, 'nearestFieldId', nearestFieldId);
 
         if (nearestFieldId === null || pieceId === null) {
@@ -163,11 +163,9 @@ export class BoardController {
 
         this.boardView.turnOffHighlights();
 
-        // castling intent
-        // let isCaslingIntent = false;
         let piece = this.findPieceById(pieceId);
         if (piece === null) return;
-        // detect castling intent
+        // CASTLING INTENT DETECTION
         const castling = this.detectCastlingIntent(piece, nearestFieldId);
 
         if (castling.isCastlingIntent === true) {
@@ -178,17 +176,17 @@ export class BoardController {
             nearestFieldView = this.boardView.getFieldViewById(nearestFieldId);
         }
 
-        let isMoveToStartingSquare = nearestField.getOccupiedBy()?.getId() === pieceId;
-        let isMoveToWrongColor = nearestField.getOccupiedBy() !== null && nearestField.getOccupiedBy()?.getColor() === this.gameState.getCurrentTurn();
-        let isMoveToEnemySquare = nearestField.getOccupiedBy() !== null && nearestField.getOccupiedBy()?.getColor() !== this.gameState.getCurrentTurn();
-
-        if (isMoveToStartingSquare === true) {
+        // IS ILLEGAL DROP
+        let isMoveToStartingSquare = nearestField.getOccupiedBy()?.getId() === pieceId; // IS ILLEGAL DROP (1)
+        let isMoveToOwnColor = nearestField.getOccupiedBy() !== null && nearestField.getOccupiedBy()?.getColor() === this.gameState.getCurrentTurn(); // IS ILLEGAL DROP
+        
+        if (isMoveToStartingSquare === true) { // IS ILLEGAL DROP
             if (this.dragOriginField === null) return;
             // block
             this.snapBackPieceToOrigin(pieceId);
             return;
         }
-        if (isMoveToWrongColor === true && castling.isCastlingIntent === false) {
+        if (isMoveToOwnColor === true && castling.isCastlingIntent === false) { // IS ILLEGAL DROP
             if (this.dragOriginField === null) return;
             // block
             this.snapBackPieceToOrigin(pieceId);
@@ -204,16 +202,17 @@ export class BoardController {
             return;
         }
 
+        let isMoveToEnemySquare = nearestField.getOccupiedBy() !== null && nearestField.getOccupiedBy()?.getColor() !== this.gameState.getCurrentTurn();
+
         if (isMoveToEnemySquare === true) {
-            let piece = nearestField.getOccupiedBy()!;
-            let pieceView = this.boardView.getPieceViewById(piece.getId())!;
-            pieceView.visible = false; // later: consider if this is enough or should it be rm from stage completely
-            this.boardState.removePieceFromStorage(piece);
+
+            this.capturePieceOnField(nearestField);
         }
 
-        this.movePiece(pieceId, nearestFieldView); // moves piece view to new field and during castling sets correct positon of king
-        nearestField.setOccupiedBy(this.findPieceById(pieceId));
-        nearestField.getOccupiedBy()!.markMoved();
+        // CONDITIONS MET: MOVE THE PIECE (view + state)
+        this.movePiece(pieceId, nearestFieldView); // Moves piece view to new field (so during castling sets correct positon of king, rook handled separately)
+        nearestField.setOccupiedBy(piece);
+        piece.markMoved();
 
         if (castling.isCastlingIntent === true) {
             // in future play castling gsap animation but for now move rook
@@ -257,15 +256,14 @@ export class BoardController {
         };
     }
 
-    private finalizeTurn(): void {
+    private capturePieceOnField(field: Field): void {
+        const piece = field.getOccupiedBy();
+        if (!piece) return;
 
-        this.gameState.incrementMoveCount();
-        this.gameState.setNextTurn();
+        const pieceView = this.boardView.getPieceViewById(piece.getId());
+        if (pieceView) pieceView.visible = false;
 
-        this.dragOriginField?.setOccupiedBy(null);
-
-        this.handleInteractivnessOfPiecesOnBoard();
-        this.dragOriginField = null;
+        this.boardState.removePieceFromStorage(piece);
     }
 
     private moveRookForCastling(currentKingFieldViewId: number): void {
@@ -300,6 +298,17 @@ export class BoardController {
         this.boardState.getFieldById(rookCurrentFieldId).setOccupiedBy(null); // state reflects that rook left its original square
         rookDestinationField.setOccupiedBy(rook); // set state of new destination to have the rook and from previus delete rook
         rookDestinationField.getOccupiedBy()!.markMoved();
+    }
+
+    private finalizeTurn(): void {
+
+        this.gameState.incrementMoveCount();
+        this.gameState.setNextTurn();
+
+        this.dragOriginField?.setOccupiedBy(null);
+
+        this.handleInteractivnessOfPiecesOnBoard();
+        this.dragOriginField = null;
     }
 
     private findNearestFieldId(px: number, py: number): number | null {
