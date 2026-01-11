@@ -128,9 +128,9 @@ export class BoardController {
         this.dragOriginFieldView = originFieldView;
 
         const { quietMoves, captures, castlingMoves } = this.moveGenerator.calculateMoves(originField);
-        console.log("quietMoves  ", quietMoves);
-        console.log("captures  ", captures);
-        console.log("castlingMoves  ", castlingMoves);
+        console.log("xxx quietMoves  ", quietMoves);
+        console.log("xxx captures  ", captures);
+        console.log("xxx castlingMoves  ", castlingMoves);
 
         const piece = originField.getOccupiedBy()!;
         const originId = originField.getId();
@@ -208,10 +208,11 @@ export class BoardController {
         }
 
         let isMoveToEnemySquare = nearestField.getOccupiedBy() !== null && nearestField.getOccupiedBy()?.getColor() !== this.gameState.getCurrentTurn();
+        let isEnPassantMove = this.isEnPassantMove(piece, nearestFieldId);
 
-        if (isMoveToEnemySquare === true) {
+        if (isMoveToEnemySquare === true || isEnPassantMove === true) {
 
-            this.capturePieceOnField(nearestField);
+            this.handleCapture(nearestField, isEnPassantMove);
         }
 
         // CONDITIONS MET: MOVE THE PIECE (view + state)
@@ -263,14 +264,37 @@ export class BoardController {
         };
     }
 
-    private capturePieceOnField(field: Field): void {
+    private handleCapture(field: Field, isEnPassantMove: boolean): void {
+
+        console.log('xxx capturePieceOnField field', field, 'isEnPassantMove', isEnPassantMove);
+
+        // check en Passant - breaks boardState todo
+        if (isEnPassantMove) {
+            console.log('xxx isEnPassantMove', isEnPassantMove);
+            let capturedFieldId = this.gameState.getCurrentTurn() === 'w' ?
+                field.getId() - 8 :
+                field.getId() + 8;
+
+            const capturedField = this.boardState.getFieldById(capturedFieldId);
+            console.log('xxx capturedField', capturedField);
+
+            this.removePieceAtField(capturedField);
+        }
+
+        // check regular
+        this.removePieceAtField(field);
+
+    }
+
+    private removePieceAtField(field: Field): void {
         const piece = field.getOccupiedBy();
-        if (!piece) return;
+        if (!piece) return; //
 
-        const pieceView = this.boardView.getPieceViewById(piece.getId());
-        if (pieceView) pieceView.visible = false;
+        const pieceView = this.boardView.getPieceViewById(piece.getId()); //
+        if (pieceView) pieceView.visible = false;//
+        field.setOccupiedBy(null);
+        this.boardState.removePieceFromStorage(piece);//
 
-        this.boardState.removePieceFromStorage(piece);
     }
 
     private moveRookForCastling(currentKingFieldViewId: number): void {
@@ -305,6 +329,15 @@ export class BoardController {
         this.boardState.getFieldById(rookCurrentFieldId).setOccupiedBy(null); // state reflects that rook left its original square
         rookDestinationField.setOccupiedBy(rook); // set state of new destination to have the rook and from previus delete rook
         rookDestinationField.getOccupiedBy()!.markMoved();
+    }
+
+    private isEnPassantMove(piece: Piece, droppedFieldId: number): boolean {
+
+        if (piece.getRole() !== 'p') return false;
+
+        if (droppedFieldId !== this.gameState.getEnPassantTargetFieldId()) return false;
+
+        return true;
     }
 
     private handlePossibleEnPassantForNextTurn(piece: Piece, droppedFieldId: number): void { // 1. The capturing pawn must have advanced exactly three ranks to perform this move. // handled in moveGenerator
