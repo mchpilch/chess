@@ -1,17 +1,20 @@
 import { MoveIDsByType } from "../commonTypes/tsTypes";
 import { BoardState } from "./boardState";
+import { GameState } from "./gameState";
 import { MoveGenerator } from "./moveGenerator";
 import { Piece } from "./piece";
 
 export class MoveValidator {
 
     private boardState!: BoardState;
+    private gameState!: GameState;
     private moveGenerator!: MoveGenerator;
 
-    constructor(boardState: BoardState) {
+    constructor(boardState: BoardState, gameState: GameState) {
 
         this.boardState = boardState;
-        this.moveGenerator = new MoveGenerator(this.boardState);
+        this.gameState = gameState;
+        this.moveGenerator = new MoveGenerator(this.boardState, this.gameState);
     }
 
     public isMoveLegal(piece: Piece, originFieldId: number, destinationFieldId: number): boolean {

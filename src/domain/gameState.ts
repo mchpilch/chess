@@ -2,18 +2,23 @@ export class GameState {
 
     private currentTurn!: 'w' | 'b';
     private moveCount!: number;
+    private enPassantTargetFieldId!: number | null;
 
     private static instance: GameState;
 
     private constructor() {
+
         this.init();
     }
 
     private init() {
+
         this.currentTurn = 'w';
         this.moveCount = 0;
+        this.enPassantTargetFieldId = null;
     }
     public static getInstance(): GameState {
+
         if (!GameState.instance) {
             GameState.instance = new GameState();
         }
@@ -34,5 +39,13 @@ export class GameState {
     
     public getMoveCount(): number {
         return this.moveCount;
+    }
+
+    public setEnPassantTargetFieldId(fieldId: number | null) {
+        this.enPassantTargetFieldId = fieldId;
+    }
+
+    public getEnPassantTargetFieldId(): number | null {
+        return this.enPassantTargetFieldId;
     }
 }

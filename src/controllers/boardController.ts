@@ -9,9 +9,11 @@ import { MoveGenerator } from "../domain/moveGenerator";
 import { MoveValidator } from "../domain/moveValidator";
 import { boardConfig } from "../configs/boardConfig";
 import { CastlingIntent } from "../commonTypes/tsTypes";
+
 /*** 
- * Board - class responsible for controlling flow. Orchestrator. 
- * Merges boardView, boardState and MoveGeneration by calling subslasses.
+ * BoardController - class responsible for controlling flow.  
+ * Handles drag and drop logic, boardView, boardState 
+ * and move generation and validation by calling subslasses.
 */
 
 export class BoardController {
@@ -21,10 +23,10 @@ export class BoardController {
 
     private boardView !: BoardView;
     private boardState !: BoardState;
+    private gameState !: GameState;
+
     private moveGenerator !: MoveGenerator;
     private moveValidator !: MoveValidator;
-
-    private gameState !: GameState;
 
     private dragOriginField: Field | null = null;
     private dragOriginFieldView: FieldView | null = null;
@@ -44,11 +46,11 @@ export class BoardController {
         this.generateBoard();
 
         this.boardState = new BoardState(this.fields, this.pieces);
-        this.moveGenerator = new MoveGenerator(this.boardState); // passing references to this.fields that later are mutated
-        this.moveValidator = new MoveValidator(this.boardState); // passing references to this.fields that later are mutated
+        this.gameState = GameState.getInstance();
+        this.moveGenerator = new MoveGenerator(this.boardState, this.gameState);
+        this.moveValidator = new MoveValidator(this.boardState, this.gameState);
 
         this.boardView = boardView;
-        this.gameState = GameState.getInstance();
 
         this.dragOriginField = null;
         this.dragOriginFieldView = null;
@@ -126,6 +128,9 @@ export class BoardController {
         this.dragOriginFieldView = originFieldView;
 
         const { quietMoves, captures, castlingMoves } = this.moveGenerator.calculateMoves(originField);
+        console.log("quietMoves  ", quietMoves);
+        console.log("captures  ", captures);
+        console.log("castlingMoves  ", castlingMoves);
 
         const piece = originField.getOccupiedBy()!;
         const originId = originField.getId();
@@ -179,7 +184,7 @@ export class BoardController {
         // IS ILLEGAL DROP
         let isMoveToStartingSquare = nearestField.getOccupiedBy()?.getId() === pieceId; // IS ILLEGAL DROP (1)
         let isMoveToOwnColor = nearestField.getOccupiedBy() !== null && nearestField.getOccupiedBy()?.getColor() === this.gameState.getCurrentTurn(); // IS ILLEGAL DROP
-        
+
         if (isMoveToStartingSquare === true) { // IS ILLEGAL DROP
             if (this.dragOriginField === null) return;
             // block
@@ -218,6 +223,8 @@ export class BoardController {
             // in future play castling gsap animation but for now move rook
             this.moveRookForCastling(nearestFieldView.getId());
         }
+
+        this.handlePossibleEnPassantForNextTurn(piece, nearestField.getId());
 
         this.finalizeTurn();
 
@@ -298,6 +305,33 @@ export class BoardController {
         this.boardState.getFieldById(rookCurrentFieldId).setOccupiedBy(null); // state reflects that rook left its original square
         rookDestinationField.setOccupiedBy(rook); // set state of new destination to have the rook and from previus delete rook
         rookDestinationField.getOccupiedBy()!.markMoved();
+    }
+
+    private handlePossibleEnPassantForNextTurn(piece: Piece, droppedFieldId: number): void { // 1. The capturing pawn must have advanced exactly three ranks to perform this move. // handled in moveGenerator
+        console.log('xxx handlePossibleEnPassantForNextTurn');
+
+        if (piece.getRole() !== 'p') {
+
+            this.gameState.setEnPassantTargetFieldId(null);  // 3. The en passant capture must be performed on the turn immediately after the pawn being captured moves. If the player does not capture en passant on that turn, they no longer can do it later.
+            console.log('xxx retun1');
+            return;
+        };
+
+        if (typeof this.dragOriginField === 'undefined' || this.dragOriginField === null) return;
+        console.log('xxx 2');
+        let movementDistance = Math.abs(droppedFieldId - this.dragOriginField.getId());
+        if (movementDistance === 16) {  // 2. The captured pawn must have moved two squares in one move, landing right next to the capturing pawn.
+
+            let enPassentTargetFieldId = this.gameState.getCurrentTurn() === 'w' ?
+                droppedFieldId - 8 :
+                droppedFieldId + 8;
+
+            this.gameState.setEnPassantTargetFieldId(enPassentTargetFieldId);
+            console.log('xxx 3', enPassentTargetFieldId);
+        } else {
+            this.gameState.setEnPassantTargetFieldId(null);  // 3. The en passant capture must be performed on the turn immediately after the pawn being captured moves. If the player does not capture en passant on that turn, they no longer can do it later.
+            console.log('xxx 4');
+        }
     }
 
     private finalizeTurn(): void {

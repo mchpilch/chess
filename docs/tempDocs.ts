@@ -60,5 +60,10 @@
     // rnbqkbnr/ppp4p/8/3p1pp1/PP1PpPPP/8/2P1P3/RNBQKBNR b KQkq g3 0 6
     
     // En passant can only be captured on the very next move after the pawn advances two squares. So only one possible, not even two per color. Just one. Good easier to handle.
+    // https://www.chess.com/terms/en-passant#what-is-en-passant
+
+    // 1. (!!!) The capturing pawn must have advanced exactly three ranks to perform this move.
+    // 2. The captured pawn must have moved two squares in one move, landing right next to the capturing pawn.
+    // 3. The en passant capture must be performed on the turn immediately after the pawn being captured moves. If the player does not capture en passant on that turn, they no longer can do it later.
 
     // https://en.wikipedia.org/w/index.php?title=Castling&oldid=604146415 - so king cannot pass the sqaure attack by enemy but rook can be under attack when castling no problem if king is save

@@ -1,6 +1,7 @@
 import { MoveIDsByType } from "../commonTypes/tsTypes";
 import { BoardState } from "./boardState";
 import { Field } from "./field";
+import { GameState } from "./gameState";
 import { Piece } from "./piece";
 
 export type SlidingPiece = 'r' | 'b' | 'q';
@@ -38,8 +39,12 @@ const SLIDING_DIRECTIONS: Record<SlidingPiece, Direction[]> = {
 export class MoveGenerator {
 
     private boardState!: BoardState;
-    constructor(boardState: BoardState) {
+    private gameState!: GameState;
+    
+    constructor(boardState: BoardState, gameState: GameState) {
+
         this.boardState = boardState;
+        this.gameState = gameState;
     }
 
     public calculateMoves(originField: Field): MoveIDsByType {
@@ -262,7 +267,17 @@ export class MoveGenerator {
                 possibleCapturesOrCheck.push(targetID);
             }
 
-            // todo en passant
+            // En passant
+            // From rulebook: 1. The capturing pawn must have advanced exactly three ranks to perform this move.
+            const enPassantPossibleForCapturingPieceOnRow =  color === 'w' ? 4 : 3;
+            if(this.boardState.getRowById(originID) === enPassantPossibleForCapturingPieceOnRow) {
+
+                let enPassantFieldId = this.gameState.getEnPassantTargetFieldId();
+                if(enPassantFieldId !== null) {
+                    possibleCapturesOrCheck.push(enPassantFieldId);
+                }
+            } 
+
         }
         return possibleCapturesOrCheck;
     }
